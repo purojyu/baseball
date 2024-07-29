@@ -31,7 +31,7 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.28' // 依存関係の指定
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    runtimeOnly 'com.mysql:mysql-connector-java:8.0.28' // 依存関係の指定
+    runtimeOnly 'mysql:mysql-connector-java:8.0.28' // 依存関係の指定
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
