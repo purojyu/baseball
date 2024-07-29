@@ -24,7 +24,7 @@ import com.example.baseball.util.BaseballUtil;
 
 import lombok.RequiredArgsConstructor;
 
-@CrossOrigin
+@CrossOrigin(origins = "https://base-ball-3c86afa3058c.herokuapp.com")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/baseball/api")
