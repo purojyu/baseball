@@ -46,3 +46,7 @@ application {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+bootJar {
+    mainClassName = 'com.example.baseball.BaseballApplication'
+}
