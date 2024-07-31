@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,6 +25,7 @@ import com.example.baseball.util.BaseballUtil;
 import lombok.RequiredArgsConstructor;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:8081")
 @RequiredArgsConstructor
 @RequestMapping("/baseball/api")
 public class BaseballController {
@@ -40,7 +42,7 @@ public class BaseballController {
         List<BaseballTeam> baseballTeamList = baseballTeamService.findAllBaseballTeam();
         response.put("baseballTeam", baseballTeamList);
         response.put("message", "Success");
-        return new ResponseEntity<>(response, HttpStatus.OK);
+;        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     // ピッチャーの取得
