@@ -7,7 +7,6 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,7 +23,6 @@ import com.example.baseball.util.BaseballUtil;
 
 import lombok.RequiredArgsConstructor;
 
-@CrossOrigin(origins = "https://base-ball-3c86afa3058c.herokuapp.com")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/baseball/api")
