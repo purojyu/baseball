@@ -11,12 +11,12 @@ Vue.use(IconsPlugin);
 
 // Axios のインスタンスを作成
 const axiosInstance = axios.create({
-  // baseURL: "https://base-ball-3c86afa3058c.herokuapp.com/baseball/api", // 本番
-  baseURL: "http://localhost:8080/baseball/api",
+  baseURL: process.env.VUE_APP_BASE_URL || "http://localhost:8080/baseball/api", // Herokuの環境変数を優先
 });
 
 // Axios インスタンスを Vue のプロトタイプに設定
 Vue.prototype.$axios = axiosInstance;
+
 new Vue({
   render: (h) => h(App),
 }).$mount("#app");

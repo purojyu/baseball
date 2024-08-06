@@ -30,7 +30,6 @@ export default {
     async getInitData() {
       try {
         const response = await this.$axios.get("/getInitData");
-        console.log(response);
         if (response.status === 200) {
           this.baseballTeamList = response.data.baseballTeam;
         }

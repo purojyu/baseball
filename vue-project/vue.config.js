@@ -9,7 +9,10 @@ module.exports = defineConfig({
     config.resolve.alias.set("vue$", path.resolve(__dirname, "node_modules/vue/dist/vue.esm.js"));
   },
 
-  // プロキシ設定
+  // プロダクションビルドの設定
+  publicPath: process.env.NODE_ENV === "production" ? "/" : "/",
+
+  // 開発サーバー設定（開発環境のみ）
   devServer: {
     proxy: {
       "/api": {
@@ -19,5 +22,7 @@ module.exports = defineConfig({
       },
     },
   },
+
+  // プロダクションソースマップの無効化
+  productionSourceMap: false,
 });
-  
