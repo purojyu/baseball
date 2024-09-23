@@ -18,7 +18,7 @@ public class SecurityConfig {
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
 				// HTTPSリダイレクトを強制(ローカルではコメントアウト)
-//				.requiresChannel(channel -> channel.anyRequest().requiresSecure())
+				.requiresChannel(channel -> channel.anyRequest().requiresSecure())
 				// CSRF保護を無効化（必要に応じて調整）
 				.csrf(csrf -> csrf.disable())
 				// CORS設定を適用()(ローカルではコメントアウト)
