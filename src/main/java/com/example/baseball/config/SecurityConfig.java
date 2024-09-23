@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -22,7 +23,7 @@ public class SecurityConfig {
 				// CSRF保護を無効化（必要に応じて調整）
 				.csrf(csrf -> csrf.disable())
 				// CORS設定を適用()(ローカルではコメントアウト)
-//				.cors(Customizer.withDefaults())
+				.cors(Customizer.withDefaults())
 				// 認証なしで全てのリクエストを許可
 				.authorizeHttpRequests(auth -> auth
 						.anyRequest().permitAll());
