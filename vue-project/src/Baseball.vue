@@ -1,0 +1,345 @@
+<template>
+  <div id="app">
+    <SearchBaseball :baseballTeamList="baseballTeamList" :pitcherList="pitcherList" :batterList="batterList" @getPitcherList="getPitcherList" @getBatterList="getBatterList" @matchResultSearch="matchResultSearch" />
+    <SearchResultBaseball :matchResultList="matchResultList" />
+    <div v-if="errorMessage" class="alert alert-danger" role="alert">
+      {{ errorMessage }}
+    </div>
+  </div>
+</template>
+
+<script>
+import SearchBaseball from "./components/SearchBaseball.vue";
+import SearchResultBaseball from "./components/SearchResultBaseball.vue";
+
+export default {
+  name: "App",
+  components: {
+    SearchBaseball,
+    SearchResultBaseball,
+  },
+  data() {
+    return {
+      baseballTeamList: [],
+      pitcherList: [],
+      batterList: [],
+      matchResultList: [],
+      errorMessage: "",
+    };
+  },
+  mounted() {
+    this.getInitData();
+  },
+  methods: {
+    async getInitData() {
+      try {
+        const response = await this.$axios.get("/getInitData");
+        if (response.status === 200) {
+          this.baseballTeamList = response.data.baseballTeam;
+        }
+      } catch (error) {
+        if (error.response) {
+          alert(error.response.data.message);
+        } else {
+          alert("初期表示エラー");
+        }
+      }
+    },
+    async getPitcherList(teamId) {
+      try {
+        const response = await this.$axios.get("/getPitcherList", {
+          params: { teamId: teamId },
+        });
+        if (response.status === 200) {
+          this.pitcherList = response.data.baseballPlayer;
+        }
+      } catch (error) {
+        if (error.response) {
+          alert(error.response.data.message);
+        } else {
+          alert("ピッチャーの取得に失敗しました");
+        }
+      }
+    },
+    async getBatterList(teamId) {
+      try {
+        const response = await this.$axios.get("/getBatterList", {
+          params: { teamId: teamId },
+        });
+        if (response.status === 200) {
+          this.batterList = response.data.baseballPlayer;
+        }
+      } catch (error) {
+        if (error.response) {
+          alert(error.response.data.message);
+        } else {
+          alert("バッターの取得に失敗しました");
+        }
+      }
+    },
+    async matchResultSearch(pitcherTeamId, batterTeamId, pitcherId, batterId) {
+      try {
+        const response = await this.$axios.get("/matchResultSearch", {
+          params: {
+            pitcherTeamId: pitcherTeamId,
+            batterTeamId: batterTeamId,
+            pitcherId: pitcherId,
+            batterId: batterId,
+          },
+        });
+        if (response.status === 200) {
+          this.matchResultList = response.data.matchResult;
+          this.errorMessage = "";
+        }
+      } catch (error) {
+        this.matchResultList = [];
+        if (error.response && error.response.data && error.response.data.message) {
+          this.errorMessage = error.response.data.message;
+        } else {
+          this.errorMessage = "対戦結果の取得に失敗しました";
+        }
+      }
+    },
+  },
+};
+</script>
+
+<style>
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  background-color: #f0f8ff; /* 水色の背景を適用 */
+  min-height: 100vh; /* 最小の高さをビューポートの高さに設定 */
+  display: flex;
+  flex-direction: column;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 15px;
+}
+
+h1 {
+  font-size: 28px;
+  margin-bottom: 20px;
+  color: #0056b3;
+}
+
+.header_font {
+  font-weight: bold;
+  font-size: 20px;
+  color: #0056b3;
+}
+
+.multiselect {
+  max-width: 100%;
+  width: 100%;
+}
+
+.multiselect__tags {
+  border: 2px solid #4e73df !important;
+  border-radius: 4px;
+}
+
+.multiselect__input,
+.multiselect__single {
+  border: none;
+  background-color: transparent;
+}
+
+.multiselect--active .multiselect__tags {
+  border-color: #2e59d9 !important;
+}
+
+.multiselect__option--highlight {
+  background-color: #4e73df;
+  color: #fff;
+}
+
+.multiselect__option--selected.multiselect__option--highlight {
+  background-color: #2e59d9;
+}
+
+.search-button {
+  width: auto;
+  min-width: 120px;
+  padding-left: 20px;
+  padding-right: 20px;
+  background-color: #4e73df;
+  border-color: #4e73df;
+  transition: all 0.3s ease;
+}
+
+.search-button:hover {
+  background-color: #2e59d9;
+  border-color: #2e59d9;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  color: #0056b3;
+  font-weight: 600;
+}
+
+.b-table {
+  margin-top: 20px;
+  border: 1px solid #4e73df;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.b-table >>> thead th {
+  background-color: #4e73df;
+  color: #fff;
+  border-color: #4668c5;
+}
+
+.b-table >>> tbody tr:nth-child(even) {
+  background-color: #e6f0ff;
+}
+
+.b-table >>> tbody tr:hover {
+  background-color: #d4e4ff;
+}
+
+.pitcher-label {
+  margin-right: 65px;
+}
+
+.batter-label {
+  margin-left: 65px;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+@media (max-width: 767px) {
+  .b-table >>> thead th {
+    white-space: nowrap !important;
+    vertical-align: middle !important;
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.2rem !important;
+  }
+
+  .b-table >>> table {
+    table-layout: auto;
+    width: 100%;
+  }
+
+  .b-table >>> .table-responsive {
+    overflow-x: auto;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  .header_font {
+    font-size: 16px;
+    margin: 0;
+    text-align: center;
+  }
+
+  .vs-label {
+    font-size: 14px;
+  }
+
+  .mt-4.align-items-center .col-4 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .pitcher-label,
+  .batter-label {
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .justify-content-center .col-md-6 {
+    max-width: 100%;
+  }
+}
+
+/* 年度選択用の追加スタイル */
+.mt-3.justify-content-center {
+  margin-bottom: 20px;
+}
+
+.mt-3.justify-content-center label {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.mt-3.justify-content-center .multiselect {
+  max-width: 200px;
+  margin: 0 auto;
+}
+.search-button:disabled {
+  background-color: #a0aec0;
+  border-color: #a0aec0;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.search-button:disabled:hover {
+  background-color: #a0aec0;
+  border-color: #a0aec0;
+}
+
+.search-button:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.alert {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+  border-color: #f5c6cb;
+}
+
+/* レスポンシブデザインの改善 */
+@media (max-width: 575px) {
+  .container {
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 20px;
+  }
+
+  .header_font {
+    font-size: 14px;
+  }
+
+  .vs-label {
+    font-size: 12px;
+  }
+
+  .search-button {
+    min-width: 100px;
+    font-size: 14px;
+  }
+
+  .mt-3.justify-content-center label {
+    font-size: 16px;
+  }
+
+  .mt-3.justify-content-center .multiselect {
+    max-width: 100%;
+  }
+}
+</style>
