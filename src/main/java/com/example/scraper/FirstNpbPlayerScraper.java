@@ -45,7 +45,7 @@ public class FirstNpbPlayerScraper {
 				// 打撃成績だけを取得(投手成績はない場合はあるが野手成績は必ず存在するため。また、投手登板があれば必ず野手成績が残るため)
 				Elements rows = playerDoc.select("#stats_b .registerStats");
 				if (rows.size() != 0) {
-					Element laseRow = rows.get(rows.size() - １);
+					Element laseRow = rows.get(rows.size() - 1);
 					String lastYear = laseRow.select(".year").text();
 					String convLastYear = lastYear.substring(0, 4);
 					int lastYearNumber = Integer.parseInt(convLastYear);
