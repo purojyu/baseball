@@ -1,5 +1,6 @@
 package com.example.baseball.service;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,15 @@ public class BaseballGameService {
 		return baseballGameRepository.findAll();
 	}
 	
+	public List<BaseballGame>  findByGameDate(Date gameDate) {
+		return baseballGameRepository.findByGameDate(gameDate);
+	}
+	
     public BaseballGame saveBaseballGame(BaseballGame baseballGame) {
         return baseballGameRepository.save(baseballGame);
+    }
+    
+    public List<String> findDistinctYears(){
+    	return baseballGameRepository.findDistinctYears();
     }
 }

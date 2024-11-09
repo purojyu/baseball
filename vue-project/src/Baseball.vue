@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <SearchBaseball :baseballTeamList="baseballTeamList" :pitcherList="pitcherList" :batterList="batterList" @getPitcherList="getPitcherList" @getBatterList="getBatterList" @matchResultSearch="matchResultSearch" />
+    <SearchBaseball :baseballTeamList="baseballTeamList" :pitcherList="pitcherList" :batterList="batterList" :years="years" @getPitcherList="getPitcherList" @getBatterList="getBatterList" @matchResultSearch="matchResultSearch" />
     <SearchResultBaseball :matchResultList="matchResultList" />
     <div v-if="errorMessage" class="alert alert-danger" role="alert">
       {{ errorMessage }}
@@ -25,6 +25,7 @@ export default {
       batterList: [],
       matchResultList: [],
       errorMessage: "",
+      years: [],
     };
   },
   mounted() {
@@ -36,6 +37,8 @@ export default {
         const response = await this.$axios.get("/getInitData");
         if (response.status === 200) {
           this.baseballTeamList = response.data.baseballTeam;
+          this.years = response.data.years;
+          this.years.unshift("通算");
         }
       } catch (error) {
         if (error.response) {
@@ -45,13 +48,13 @@ export default {
         }
       }
     },
-    async getPitcherList(teamId) {
+    async getPitcherList(teamId, year) {
       try {
         const response = await this.$axios.get("/getPitcherList", {
-          params: { teamId: teamId },
+          params: { teamId: teamId, year: year },
         });
         if (response.status === 200) {
-          this.pitcherList = response.data.baseballPlayer;
+          this.pitcherList = response.data.pitcherListt;
         }
       } catch (error) {
         if (error.response) {
@@ -61,13 +64,13 @@ export default {
         }
       }
     },
-    async getBatterList(teamId) {
+    async getBatterList(teamId, year) {
       try {
         const response = await this.$axios.get("/getBatterList", {
-          params: { teamId: teamId },
+          params: { teamId: teamId, year: year },
         });
         if (response.status === 200) {
-          this.batterList = response.data.baseballPlayer;
+          this.batterList = response.data.batterList;
         }
       } catch (error) {
         if (error.response) {
@@ -77,7 +80,7 @@ export default {
         }
       }
     },
-    async matchResultSearch(pitcherTeamId, batterTeamId, pitcherId, batterId) {
+    async matchResultSearch(pitcherTeamId, batterTeamId, pitcherId, batterId, selectedYear) {
       try {
         const response = await this.$axios.get("/matchResultSearch", {
           params: {
@@ -85,6 +88,7 @@ export default {
             batterTeamId: batterTeamId,
             pitcherId: pitcherId,
             batterId: batterId,
+            selectedYear: selectedYear,
           },
         });
         if (response.status === 200) {
@@ -218,6 +222,10 @@ label {
   justify-content: center;
 }
 
+.small-text {
+  font-size: 16px;
+}
+
 @media (max-width: 767px) {
   .b-table >>> thead th {
     white-space: nowrap !important;
@@ -340,6 +348,28 @@ label {
 
   .mt-3.justify-content-center .multiselect {
     max-width: 100%;
+  }
+
+  .multiselect {
+    max-width: 100%;
+    width: 100%;
+    font-size: 12px;
+    padding: auto;
+  }
+
+  .multiselect__input,
+  .multiselect__single {
+    font-size: 14px;
+  }
+
+  .multiselect__tags {
+    min-height: 38px;
+  }
+  .small-text {
+    font-size: 10px;
+  }
+  h1 {
+    font-size: 24px !important;
   }
 }
 </style>

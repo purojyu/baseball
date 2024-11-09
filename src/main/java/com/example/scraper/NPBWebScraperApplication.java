@@ -1,8 +1,6 @@
 package com.example.scraper;
 
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
@@ -12,16 +10,23 @@ public class NPBWebScraperApplication {
     public static void main(String[] args) {
 //        SpringApplication.run(NPBWebScraperApplication.class, args);
     }
-//
-    @Bean
-    CommandLineRunner run(NPBWebScraper npbWebScraper) {
-        return args -> {
-            npbWebScraper.scrapeData();
-        };
-    }
-//    CommandLineRunner run(InsertPlayerHistory insertPlayerHistory) {
+    
+//  @Bean
+//  CommandLineRunner run(TradeScraper tradeScraper) {
+//      return args -> {
+//    	  tradeScraper.updateBaseballHistory();
+//      };
+//  }
+////    @Bean
+//    CommandLineRunner run(NPBWebScraper npbWebScraper) {
 //        return args -> {
-//        	insertPlayerHistory.insertBaseballPlayerHistory();
+//            npbWebScraper.scrapeData();
+//        };
+//    }
+//  @Bean
+//    CommandLineRunner run(FirstNPBPlayerScraper2024 firstNPBPlayerScraper2024) {
+//        return args -> {
+//        	firstNPBPlayerScraper2024.scrapePlayer();
 //        };
 //    }
 //  @Bean

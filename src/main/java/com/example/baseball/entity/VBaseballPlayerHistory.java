@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "V_BASEBALL_PLAYER_HISTORY_REGULAR")
-public class VBaseballPlayerHistoryRegular {
+@Table(name = "V_BASEBALL_PLAYER_HISTORY")
+public class VBaseballPlayerHistory {
     @Id
     @Column(name = "HISTORY_ID")
     private Long historyId;

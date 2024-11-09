@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1>2024年度プロ野球｜対戦成績検索画面</h1>
+    <h1>プロ野球｜対戦成績検索画面</h1>
     <b-row class="mt-4 align-items-center">
       <b-col cols="4">
         <label class="header_font text-right pitcher-label">投手</label>
@@ -13,12 +13,40 @@
       </b-col>
     </b-row>
     <hr />
+    <!-- 注意書き -->
+    <div class="notice mt-3">
+      <p>検索仕様</p>
+      <div class="text-left small-text">
+        <ul>
+          <li>投手名か野手名のどちらか一方は必ず選択して検索ボタンを押下してください。</li>
+          <li>投手名か野手名のとちらか一方の検索の場合、選択した選手と選択したチームの全ての対戦結果を表示します。</li>
+          <li>通算の検索は、2016年以降の結果が表示されます。</li>
+          <li>プルダウンの選択は、文字入力で絞り込み可能です。</li>
+          <li>移籍歴のある選手で、特定のチームを選択した場合、選手が選択されたチームに所属していた期間の結果が表示されます。</li>
+          <li>移籍歴のある選手で、全てのチームを選択した場合、選手が複数の球団に所属していた全期間の結果が表示されます。</li>
+        </ul>
+      </div>
+    </div>
 
     <!-- 年度選択 -->
-    <!-- <b-row class="mt-3 justify-content-center">
-      <b-col cols="12" md="6" class="mb-3">
+    <b-row class="mt-3 justify-content-center">
+      <b-col cols="6" xs="6" class="mb-3">
         <label class="w-100 text-center">年度</label>
-        <multiselect v-model="selectedYear" :options="yearOptions" placeholder="選択してください" :selectLabel="'選択'" :deselectLabel="'選択解除'">
+        <multiselect
+          v-model="selectedYear"
+          :options="years"
+          placeholder="選択してください"
+          :selectLabel="'選択'"
+          :deselectLabel="''"
+          :allowEmpty="false"
+          required
+          @input="
+            () => {
+              this.getPitcherList();
+              this.getBatterList();
+            }
+          "
+        >
           <template slot="noResult">
             <span>{{ defaultLabel.noDateLabel }}</span>
           </template>
@@ -27,13 +55,13 @@
           </template>
         </multiselect>
       </b-col>
-    </b-row> -->
+    </b-row>
 
     <!-- チーム選択 -->
     <b-row class="mt-3">
-      <b-col cols="12" md="6" class="mb-3">
+      <b-col cols="6" xs="6" class="mb-3">
         <label>投手チーム</label>
-        <multiselect v-model="selectPitcherTeamOptions" :options="pitcherTeamOptions" label="pitcherTeamNm" track-by="pitcherTeamId" placeholder="チーム名を入力して絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="'選択解除'" @input="getPitcherList">
+        <multiselect v-model="selectPitcherTeamOptions" :options="pitcherTeamOptions" label="pitcherTeamNm" track-by="pitcherTeamId" placeholder="チーム名を入力して絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="''" :allowEmpty="false" required @input="this.getPitcherList">
           <template slot="noResult">
             <span>{{ defaultLabel.noDateLabel }}</span>
           </template>
@@ -42,9 +70,9 @@
           </template>
         </multiselect>
       </b-col>
-      <b-col cols="12" md="6" class="mb-3">
+      <b-col cols="6" xs="6" class="mb-3">
         <label>野手チーム</label>
-        <multiselect v-model="selectBatterTeamOptions" :options="batterTeamOptions" label="batterTeamNm" track-by="batterTeamId" placeholder="チーム名を入力して絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="'選択解除'" @input="getBatterList">
+        <multiselect v-model="selectBatterTeamOptions" :options="batterTeamOptions" label="batterTeamNm" track-by="batterTeamId" placeholder="チーム名を入力して絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="''" :allowEmpty="false" required @input="this.getBatterList">
           <template slot="noResult">
             <span>{{ defaultLabel.noDateLabel }}</span>
           </template>
@@ -57,9 +85,9 @@
 
     <!-- 選手選択 -->
     <b-row class="mt-3">
-      <b-col cols="12" md="6" class="mb-3">
+      <b-col cols="6" xs="6" class="mb-3">
         <label>投手名</label>
-        <multiselect v-model="selectPitcherOptions" :options="pitcherOptions" label="displayPicherLabel" track-by="pitcherId" placeholder="背番号か選手名を入力で絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="'選択解除'" :noDateLabel="defaultLabel.noDateLabel">
+        <multiselect v-model="selectPitcherOptions" :options="localPitcherList" label="playerNm" track-by="playerId" placeholder="選手名を入力で絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="'解除'" :noDateLabel="defaultLabel.noDateLabel">
           <template slot="noResult">
             <span>{{ defaultLabel.noDateLabel }}</span>
           </template>
@@ -68,9 +96,9 @@
           </template>
         </multiselect>
       </b-col>
-      <b-col cols="12" md="6" class="mb-3">
+      <b-col cols="6" xs="6" class="mb-3">
         <label>野手名</label>
-        <multiselect v-model="selectBatterOptions" :options="batterOptions" label="displayBatterLabel" track-by="batterId" placeholder="背番号か選手名を入力で絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="'選択解除'" :noDateLabel="defaultLabel.noDateLabel">
+        <multiselect v-model="selectBatterOptions" :options="localBatterList" label="playerNm" track-by="playerId" placeholder="選手名を入力で絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="'解除'" :noDateLabel="defaultLabel.noDateLabel">
           <template slot="noResult">
             <span>{{ defaultLabel.noDateLabel }}</span>
           </template>
@@ -100,20 +128,26 @@ export default {
     batterList: Array,
     pitcherList: Array,
     matchResultList: Array,
+    years: Array,
   },
   data() {
     return {
       selectPitcherOptions: null,
       selectBatterOptions: null,
-      selectBatterTeamOptions: null,
-      selectPitcherTeamOptions: null,
+      selectBatterTeamOptions: {
+        batterTeamId: 0,
+        batterTeamNm: "全てのチーム",
+      },
+      selectPitcherTeamOptions: {
+        pitcherTeamId: 0,
+        pitcherTeamNm: "全てのチーム",
+      },
       localPitcherList: [...this.pitcherList],
       localBatterList: [...this.batterList],
-      selectedYear: "2024",
-      yearOptions: ["2024"],
+      selectedYear: "通算",
       defaultLabel: {
         teamPlaceholder: "チーム名を入力して絞り込み可能",
-        playerPlaceholder: "背番号か選手名を入力で絞り込み可能",
+        playerPlaceholder: "選手名を入力で絞り込み可能",
         selectLabel: "選択",
         selectedLabel: "選択中",
         deselectLabel: "選択解除",
@@ -131,55 +165,57 @@ export default {
   },
   computed: {
     batterTeamOptions() {
-      return this.baseballTeamList.map((batterTeam) => ({
-        batterTeamId: batterTeam.teamId,
-        batterTeamNm: batterTeam.teamNm,
-      }));
+      return [
+        {
+          batterTeamId: 0,
+          batterTeamNm: "全てのチーム",
+        },
+        ...this.baseballTeamList.map((batterTeam) => ({
+          batterTeamId: batterTeam.teamId,
+          batterTeamNm: batterTeam.teamNm,
+        })),
+      ];
     },
     pitcherTeamOptions() {
-      return this.baseballTeamList.map((pitcherTeam) => ({
-        pitcherTeamId: pitcherTeam.teamId,
-        pitcherTeamNm: pitcherTeam.teamNm,
-      }));
-    },
-    batterOptions() {
-      return this.localBatterList.map((batter) => ({
-        batterId: batter.playerId,
-        batterNm: batter.playerNm,
-        displayBatterLabel: `${batter.uniformNo}: ${batter.playerNm}`,
-      }));
-    },
-    pitcherOptions() {
-      return this.localPitcherList.map((pitcher) => ({
-        pitcherId: pitcher.playerId,
-        pitcherNm: pitcher.playerNm,
-        displayPicherLabel: `${pitcher.uniformNo}: ${pitcher.playerNm}`,
-      }));
+      return [
+        {
+          pitcherTeamId: 0,
+          pitcherTeamNm: "全てのチーム",
+        },
+        ...this.baseballTeamList.map((pitcherTeam) => ({
+          pitcherTeamId: pitcherTeam.teamId,
+          pitcherTeamNm: pitcherTeam.teamNm,
+        })),
+      ];
     },
     isSearchEnabled() {
-      return this.selectPitcherOptions || this.selectBatterOptions;
+      return (this.selectPitcherOptions || this.selectBatterOptions) && this.selectedYear;
     },
+  },
+  mounted() {
+    this.getPitcherList();
+    this.getBatterList();
   },
   methods: {
     getPitcherList() {
       this.selectPitcherOptions = null;
       this.localPitcherList = [];
-      if (this.selectPitcherTeamOptions !== null) {
-        this.$emit("getPitcherList", this.selectPitcherTeamOptions.pitcherTeamId);
+      if (this.selectPitcherTeamOptions !== null && this.selectedYear !== null) {
+        this.$emit("getPitcherList", this.selectPitcherTeamOptions.pitcherTeamId, this.selectedYear);
       }
     },
     getBatterList() {
       this.selectBatterOptions = null;
       this.localBatterList = [];
-      if (this.selectBatterTeamOptions !== null) {
-        this.$emit("getBatterList", this.selectBatterTeamOptions.batterTeamId);
+      if (this.selectPitcherTeamOptions !== null && this.selectedYear !== null) {
+        this.$emit("getBatterList", this.selectBatterTeamOptions.batterTeamId, this.selectedYear);
       }
     },
     matchResultSearch() {
       const pitcherTeamId = this.selectPitcherTeamOptions ? this.selectPitcherTeamOptions.pitcherTeamId : null;
       const batterTeamId = this.selectBatterTeamOptions ? this.selectBatterTeamOptions.batterTeamId : null;
-      const pitcherId = this.selectPitcherOptions ? this.selectPitcherOptions.pitcherId : null;
-      const batterId = this.selectBatterOptions ? this.selectBatterOptions.batterId : null;
+      const pitcherId = this.selectPitcherOptions ? this.selectPitcherOptions.playerId : null;
+      const batterId = this.selectBatterOptions ? this.selectBatterOptions.playerId : null;
 
       this.$emit("matchResultSearch", pitcherTeamId, batterTeamId, pitcherId, batterId, this.selectedYear);
     },

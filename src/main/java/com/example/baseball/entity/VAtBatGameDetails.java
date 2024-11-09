@@ -45,32 +45,32 @@ public class VAtBatGameDetails {
     @Column(name = "BATTER_ID")
     private Long batterId;
 
-    @Column(name = "BATTER_NAME")
-    private String batterName;
+    @Column(name = "BATTER_NM")
+    private String batterNm;
     
     @Column(name = "BATTER_TEAM_ID")
     private Long batterTeamId;
 
-    @Column(name = "BATTER_TEAM_NAME")
-    private String batterTeamName;
+    @Column(name = "BATTER_TEAM_NM")
+    private String batterTeamNm;
 
-    @Column(name = "BATTER_TEAM_SHORT_NAME")
-    private String batterTeamShortName;
+    @Column(name = "BATTER_TEAM_SHORT_NM")
+    private String batterTeamShortNm;
 
     @Column(name = "PITCHER_ID")
     private Long pitcherId;
 
-    @Column(name = "PITCHER_NAME")
-    private String pitcherName;
+    @Column(name = "PITCHER_NM")
+    private String pitcherNm;
     
     @Column(name = "PITCHER_TEAM_ID")
     private Long pitcherTeamId;
 
-    @Column(name = "PITCHER_TEAM_NAME")
-    private String pitcherTeamName;
+    @Column(name = "PITCHER_TEAM_NM")
+    private String pitcherTeamNm;
 
-    @Column(name = "PITCHER_TEAM_SHORT_NAME")
-    private String pitcherTeamShortName;
+    @Column(name = "PITCHER_TEAM_SHORT_NM")
+    private String pitcherTeamShortNm;
 
     @Column(name = "RESULT")
     private String result;

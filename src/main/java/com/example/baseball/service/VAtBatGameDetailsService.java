@@ -22,7 +22,7 @@ public class VAtBatGameDetailsService {
 	 * @return
 	 */
 	public List<VAtBatGameDetails> findByBatterAndPitcher(Long pitcherTeamId, Long batterTeamId, Long pitcherId,
-			Long batterId) {
-		return vAtBatGameDetailsRepository.findByBatterAndPitcher(pitcherTeamId, batterTeamId, pitcherId, batterId);
+			Long batterId, String selectedYear) {
+		return vAtBatGameDetailsRepository.findByBatterAndPitcher(pitcherTeamId, batterTeamId, pitcherId, batterId, selectedYear);
 	}
 }
