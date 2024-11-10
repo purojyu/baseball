@@ -6,4 +6,5 @@ package com.example.baseball.entity;
 public interface PlayerProjection {
     Long getPlayerId();
     String getPlayerNm();
+    String getPlayerNmKana();
 }

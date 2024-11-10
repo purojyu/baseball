@@ -10,7 +10,12 @@ public class NPBWebScraperApplication {
     public static void main(String[] args) {
 //        SpringApplication.run(NPBWebScraperApplication.class, args);
     }
-    
+//  @Bean
+//  CommandLineRunner run(UpdNPBPlayerScraper2024 updNPBPlayerScraper2024) {
+//      return args -> {
+//    	  updNPBPlayerScraper2024.scrapePlayer();
+//      };
+//  }
 //  @Bean
 //  CommandLineRunner run(TradeScraper tradeScraper) {
 //      return args -> {

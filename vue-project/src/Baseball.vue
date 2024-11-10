@@ -5,18 +5,21 @@
     <div v-if="errorMessage" class="alert alert-danger" role="alert">
       {{ errorMessage }}
     </div>
+    <AppFooter />
   </div>
 </template>
 
 <script>
 import SearchBaseball from "./components/SearchBaseball.vue";
 import SearchResultBaseball from "./components/SearchResultBaseball.vue";
+import AppFooter from "./components/AppFooter.vue";
 
 export default {
   name: "App",
   components: {
     SearchBaseball,
     SearchResultBaseball,
+    AppFooter,
   },
   data() {
     return {
@@ -115,8 +118,8 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  background-color: #f0f8ff; /* 水色の背景を適用 */
-  min-height: 100vh; /* 最小の高さをビューポートの高さに設定 */
+  background-color: #f0f8ff;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -224,6 +227,40 @@ label {
 
 .small-text {
   font-size: 16px;
+}
+
+.footer-container {
+  background-color: #e6f3ff;
+  padding: 1rem;
+}
+
+.footer {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer h4 {
+  margin-bottom: 10px;
+}
+
+.disclaimer p {
+  margin: 0;
+  font-size: 14px;
+  color: #6c757d;
+  text-align: left;
+}
+
+.disclaimer-heading {
+  margin-top: 20px;
+}
+
+.footer a {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+.footer a:hover {
+  text-decoration: none;
 }
 
 @media (max-width: 767px) {
@@ -370,6 +407,13 @@ label {
   }
   h1 {
     font-size: 24px !important;
+  }
+
+  .disclaimer p {
+    margin: 0;
+    font-size: 10px;
+    color: #6c757d;
+    text-align: left;
   }
 }
 </style>

@@ -87,7 +87,7 @@
     <b-row class="mt-3">
       <b-col cols="6" xs="6" class="mb-3">
         <label>投手名</label>
-        <multiselect v-model="selectPitcherOptions" :options="localPitcherList" label="playerNm" track-by="playerId" placeholder="選手名を入力で絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="'解除'" :noDateLabel="defaultLabel.noDateLabel">
+        <multiselect v-model="selectPitcherOptions" :options="filteredPitcherList" label="playerNm" track-by="playerId" placeholder="選手名を入力で絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="'解除'" @search-change="updatePitcherSearch" :filterable="false" :internal-search="false">
           <template slot="noResult">
             <span>{{ defaultLabel.noDateLabel }}</span>
           </template>
@@ -98,7 +98,7 @@
       </b-col>
       <b-col cols="6" xs="6" class="mb-3">
         <label>野手名</label>
-        <multiselect v-model="selectBatterOptions" :options="localBatterList" label="playerNm" track-by="playerId" placeholder="選手名を入力で絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="'解除'" :noDateLabel="defaultLabel.noDateLabel">
+        <multiselect v-model="selectBatterOptions" :options="filteredBatterList" label="playerNm" track-by="playerId" placeholder="選手名を入力で絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="'解除'" @search-change="updateBatterSearch" :filterable="false" :internal-search="false">
           <template slot="noResult">
             <span>{{ defaultLabel.noDateLabel }}</span>
           </template>
@@ -145,6 +145,8 @@ export default {
       localPitcherList: [...this.pitcherList],
       localBatterList: [...this.batterList],
       selectedYear: "通算",
+      searchQueryPitcher: "",
+      searchQueryBatter: "",
       defaultLabel: {
         teamPlaceholder: "チーム名を入力して絞り込み可能",
         playerPlaceholder: "選手名を入力で絞り込み可能",
@@ -158,9 +160,17 @@ export default {
   watch: {
     pitcherList(newVal) {
       this.localPitcherList = [...newVal];
+      const currentSelection = this.selectPitcherOptions;
+      if (currentSelection && !this.localPitcherList.some((player) => player.playerId === currentSelection.playerId)) {
+        this.selectPitcherOptions = null;
+      }
     },
     batterList(newVal) {
       this.localBatterList = [...newVal];
+      const currentSelection = this.selectBatterOptions;
+      if (currentSelection && !this.localBatterList.some((player) => player.playerId === currentSelection.playerId)) {
+        this.selectBatterOptions = null;
+      }
     },
   },
   computed: {
@@ -191,6 +201,30 @@ export default {
     isSearchEnabled() {
       return (this.selectPitcherOptions || this.selectBatterOptions) && this.selectedYear;
     },
+    filteredPitcherList() {
+      if (!this.searchQueryPitcher) {
+        return this.localPitcherList;
+      }
+      // 漢字名とカナ名で検索できるようにする。検索クエリから半角・全角スペースを削除。
+      const normalizedQuery = this.searchQueryPitcher.replace(/[\s\u3000]/g, "").toLowerCase();
+      return this.localPitcherList.filter((player) => {
+        const playerNm = player.playerNm ? player.playerNm.toLowerCase().replace(/[\s\u3000]/g, "") : "";
+        const playerNmKana = player.playerNmKana ? player.playerNmKana.toLowerCase().replace(/[\s\u3000]/g, "") : "";
+        return playerNm.includes(normalizedQuery) || playerNmKana.includes(normalizedQuery);
+      });
+    },
+    filteredBatterList() {
+      if (!this.searchQueryBatter) {
+        return this.localBatterList;
+      }
+      // 漢字名とカナ名で検索できるようにする。検索クエリから半角・全角スペースを削除。
+      const normalizedQuery = this.searchQueryBatter.replace(/[\s\u3000]/g, "").toLowerCase();
+      return this.localBatterList.filter((player) => {
+        const playerNm = player.playerNm ? player.playerNm.toLowerCase().replace(/[\s\u3000]/g, "") : "";
+        const playerNmKana = player.playerNmKana ? player.playerNmKana.toLowerCase().replace(/[\s\u3000]/g, "") : "";
+        return playerNm.includes(normalizedQuery) || playerNmKana.includes(normalizedQuery);
+      });
+    },
   },
   mounted() {
     this.getPitcherList();
@@ -198,14 +232,12 @@ export default {
   },
   methods: {
     getPitcherList() {
-      this.selectPitcherOptions = null;
       this.localPitcherList = [];
       if (this.selectPitcherTeamOptions !== null && this.selectedYear !== null) {
         this.$emit("getPitcherList", this.selectPitcherTeamOptions.pitcherTeamId, this.selectedYear);
       }
     },
     getBatterList() {
-      this.selectBatterOptions = null;
       this.localBatterList = [];
       if (this.selectPitcherTeamOptions !== null && this.selectedYear !== null) {
         this.$emit("getBatterList", this.selectBatterTeamOptions.batterTeamId, this.selectedYear);
@@ -218,6 +250,12 @@ export default {
       const batterId = this.selectBatterOptions ? this.selectBatterOptions.playerId : null;
 
       this.$emit("matchResultSearch", pitcherTeamId, batterTeamId, pitcherId, batterId, this.selectedYear);
+    },
+    updatePitcherSearch(query) {
+      this.searchQueryPitcher = query;
+    },
+    updateBatterSearch(query) {
+      this.searchQueryBatter = query;
     },
   },
 };

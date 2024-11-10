@@ -9,7 +9,13 @@
       <tbody>
         <tr v-for="(item, index) in matchResultList" :key="index">
           <td v-for="field in fields" :key="field.key" :class="['td', getCellClass(field.key, item)]">
-            <template v-if="['battingAverage', 'ops', 'onBasePercentage', 'sluggingPercentage'].includes(field.key)">
+            <template v-if="field.key === 'pitcherNm'">
+              <a :href="item.pitcherNpbUrl" target="_blank" rel="noopener noreferrer">{{ item.pitcherNm }}</a>
+            </template>
+            <template v-else-if="field.key === 'batterNm'">
+              <a :href="item.batterNpbUrl" target="_blank" rel="noopener noreferrer">{{ item.batterNm }}</a>
+            </template>
+            <template v-else-if="['battingAverage', 'ops', 'onBasePercentage', 'sluggingPercentage'].includes(field.key)">
               {{ item[field.key].toFixed(3) }}
             </template>
             <template v-else>

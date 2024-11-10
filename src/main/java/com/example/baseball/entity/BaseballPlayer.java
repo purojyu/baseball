@@ -16,32 +16,38 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "BASEBALL_PLAYER") // テーブル名を大文字で指定
+@Table(name = "BASEBALL_PLAYER")
 public class BaseballPlayer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "PLAYER_ID") // カラム名を大文字で指定
+    @Column(name = "PLAYER_ID")
     private Long playerId;
 
-    @Column(name = "PLAYER_NM") // カラム名を大文字で指定
+    @Column(name = "PLAYER_NM")
     private String playerNm;
 
-    @Column(name = "POSITION") // カラム名を大文字で指定
+    @Column(name = "POSITION")
     private String position;
 
-    @Column(name = "BIRTH_DATE") // カラム名を大文字で指定
+    @Column(name = "BIRTH_DATE")
     private LocalDate birthDate;
 
-    @Column(name = "HEIGHT") // カラム名を大文字で指定
+    @Column(name = "HEIGHT")
     private Long height;
 
-    @Column(name = "WEIGHT") // カラム名を大文字で指定
+    @Column(name = "WEIGHT")
     private Long weight;
 
-    @Column(name = "THROWER") // カラム名を大文字で指定
+    @Column(name = "THROWER")
     private String thrower;
 
-    @Column(name = "HANDED") // カラム名を大文字で指定
+    @Column(name = "HANDED")
     private String handed;
+
+    @Column(name = "NPB_URL")
+    private String npbUrl;
+
+    @Column(name = "PLAYER_NM_KANA")
+    private String playerNmKana;
 }

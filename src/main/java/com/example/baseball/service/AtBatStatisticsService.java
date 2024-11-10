@@ -64,6 +64,7 @@ public class AtBatStatisticsService {
 	public MatchResult calcAtBatResult(List<VAtBatGameDetails> atBatResult) {
 		MatchResult matchResult = new MatchResult();
 		matchResult.setBatterNm(atBatResult.get(0).getBatterNm());
+		matchResult.setBatterNpbUrl(atBatResult.get(0).getBatterNpbUrl());
 	    Set<Long> uniqueBatterTeamIds = atBatResult.stream()
                 .map(VAtBatGameDetails::getBatterTeamId)
                 .collect(Collectors.toSet());
@@ -76,6 +77,7 @@ public class AtBatStatisticsService {
 		matchResult.setBatterTeamNm(atBatResult.get(0).getBatterTeamShortNm());
 	    }
 	    matchResult.setPitcherNm(atBatResult.get(0).getPitcherNm());
+	    matchResult.setPitcherNpbUrl(atBatResult.get(0).getPitcherNpbUrl());
 	    Set<Long> uniquePitcherTeamIds = atBatResult.stream()
                 .map(VAtBatGameDetails::getPitcherTeamId)
                 .collect(Collectors.toSet());

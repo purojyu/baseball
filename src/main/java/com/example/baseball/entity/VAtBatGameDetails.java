@@ -47,6 +47,9 @@ public class VAtBatGameDetails {
 
     @Column(name = "BATTER_NM")
     private String batterNm;
+
+    @Column(name = "BATTER_NPB_URL") 
+    private String batterNpbUrl;
     
     @Column(name = "BATTER_TEAM_ID")
     private Long batterTeamId;
@@ -62,6 +65,9 @@ public class VAtBatGameDetails {
 
     @Column(name = "PITCHER_NM")
     private String pitcherNm;
+
+    @Column(name = "PITCHER_NPB_URL") 
+    private String pitcherNpbUrl;
     
     @Column(name = "PITCHER_TEAM_ID")
     private Long pitcherTeamId;
