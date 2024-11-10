@@ -1,6 +1,6 @@
 <template>
   <div class="table-container">
-    <table v-if="matchResultList.length" class="table">
+    <table v-if="matchResultList.length" class="table" ref="resultsTable">
       <thead>
         <tr>
           <th v-for="field in fields" :key="field.key" class="th">{{ field.label }}</th>
@@ -64,7 +64,22 @@ export default {
       ],
     };
   },
+  watch: {
+    matchResultList(newVal) {
+      if (newVal && newVal.length > 0) {
+        this.$nextTick(() => {
+          this.scrollToTable();
+        });
+      }
+    },
+  },
   methods: {
+    scrollToTable() {
+      const tableElement = this.$refs.resultsTable;
+      if (tableElement) {
+        tableElement.scrollIntoView({ behavior: "smooth" });
+      }
+    },
     // チームIDに応じてクラス名を返す
     getTeamClass(teamId) {
       const teamClasses = {
