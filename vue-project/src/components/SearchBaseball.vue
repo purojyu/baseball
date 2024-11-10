@@ -127,7 +127,10 @@ export default {
     baseballTeamList: Array,
     batterList: Array,
     pitcherList: Array,
-    matchResultList: Array,
+    matchResultList: {
+      type: Array,
+      required: true,
+    },
     years: Array,
   },
   data() {
@@ -229,6 +232,7 @@ export default {
   mounted() {
     this.getPitcherList();
     this.getBatterList();
+    window.addEventListener("keydown", this.handleKeydown);
   },
   methods: {
     getPitcherList() {
@@ -251,12 +255,20 @@ export default {
 
       this.$emit("matchResultSearch", pitcherTeamId, batterTeamId, pitcherId, batterId, this.selectedYear);
     },
+    handleKeydown(event) {
+      if (event.key === "Enter") {
+        this.matchResultSearch();
+      }
+    },
     updatePitcherSearch(query) {
       this.searchQueryPitcher = query;
     },
     updateBatterSearch(query) {
       this.searchQueryBatter = query;
     },
+  },
+  beforeDestroy() {
+    window.removeEventListener("keydown", this.handleKeydown);
   },
 };
 </script>
