@@ -140,14 +140,14 @@ export default {
 }
 
 h1 {
-  font-size: 28px;
+  font-size: 32px;
   margin-bottom: 20px;
   color: #0056b3;
 }
 
 .header_font {
   font-weight: bold;
-  font-size: 20px;
+  font-size: 24px;
   color: #0056b3;
 }
 
@@ -200,6 +200,7 @@ label {
   margin-bottom: 5px;
   color: #0056b3;
   font-weight: 600;
+  font-size: 24px !important;
 }
 
 .b-table {
@@ -327,12 +328,17 @@ label {
   }
 
   h1 {
-    font-size: 22px;
+    font-size: 24px;
   }
 
   .header_font {
     margin: 0;
     text-align: center;
+    font-size: 24px;
+  }
+
+  label {
+    font-size: 20px !important;
   }
 
   .vs-label {
