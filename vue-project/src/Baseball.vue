@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+    <div v-if="isLoading" class="loading-overlay">
+      <div class="spinner"></div>
+    </div>
     <SearchBaseball :baseballTeamList="baseballTeamList" :pitcherList="pitcherList" :batterList="batterList" :years="years" @getPitcherList="getPitcherList" @getBatterList="getBatterList" @matchResultSearch="matchResultSearch" />
     <SearchResultBaseball :matchResultList="matchResultList" />
     <div v-if="errorMessage" class="alert alert-danger" role="alert">
@@ -29,6 +32,7 @@ export default {
       matchResultList: [],
       errorMessage: "",
       years: [],
+      isLoading: false,
     };
   },
   mounted() {
@@ -36,6 +40,7 @@ export default {
   },
   methods: {
     async getInitData() {
+      this.isLoading = true;
       try {
         const response = await this.$axios.get("/getInitData");
         if (response.status === 200) {
@@ -49,6 +54,8 @@ export default {
         } else {
           alert("初期表示エラー");
         }
+      } finally {
+        this.isLoading = false;
       }
     },
     async getPitcherList(teamId, year) {
@@ -84,6 +91,7 @@ export default {
       }
     },
     async matchResultSearch(pitcherTeamId, batterTeamId, pitcherId, batterId, selectedYear) {
+      this.isLoading = true;
       try {
         const response = await this.$axios.get("/matchResultSearch", {
           params: {
@@ -105,6 +113,8 @@ export default {
         } else {
           this.errorMessage = "対戦結果の取得に失敗しました";
         }
+      } finally {
+        this.isLoading = false;
       }
     },
   },
@@ -263,6 +273,40 @@ label {
   text-decoration: none;
 }
 
+/* ローディングオーバーレイのスタイル */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* 他の要素より前面に表示 */
+}
+
+/* スピナーのスタイル */
+.spinner {
+  border: 12px solid #f3f3f3;
+  border-top: 12px solid #3498db;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+}
+
+/* スピナーのアニメーション */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 767px) {
   .b-table >>> thead th {
     white-space: nowrap !important;
@@ -287,7 +331,6 @@ label {
   }
 
   .header_font {
-    font-size: 16px;
     margin: 0;
     text-align: center;
   }
@@ -366,10 +409,6 @@ label {
     font-size: 20px;
   }
 
-  .header_font {
-    font-size: 14px;
-  }
-
   .vs-label {
     font-size: 12px;
   }
@@ -403,7 +442,7 @@ label {
     min-height: 38px;
   }
   .small-text {
-    font-size: 10px;
+    font-size: 12px;
   }
   h1 {
     font-size: 24px !important;
