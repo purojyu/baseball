@@ -22,17 +22,21 @@ public interface VAtBatGameDetailsRepository extends JpaRepository<VAtBatGameDet
      * @param selectedYear
      * @return
      */
-    @Query(value = "SELECT * FROM V_AT_BAT_GAME_DETAILS vag " +
-           "WHERE (:batterTeamId = 0 OR vag.BATTER_TEAM_ID = :batterTeamId) " +
-           "AND (:pitcherTeamId = 0 OR vag.PITCHER_TEAM_ID = :pitcherTeamId) " +
-           "AND (:batterId IS NULL OR vag.BATTER_ID = :batterId) " +
-           "AND (:pitcherId IS NULL OR vag.PITCHER_ID = :pitcherId) " +
-           "AND (:selectedYear = '通算' OR YEAR(vag.GAME_DATE) = :selectedYear)",
-           nativeQuery = true)
-    List<VAtBatGameDetails> findByBatterAndPitcher(
-            @Param("pitcherTeamId") Long pitcherTeamId,
-            @Param("batterTeamId") Long batterTeamId,
-            @Param("pitcherId") Long pitcherId,
-            @Param("batterId") Long batterId,
-            @Param("selectedYear") String selectedYear);
+	@Query(value = "SELECT * FROM V_AT_BAT_GAME_DETAILS vag " +
+		       "WHERE (:batterTeamId = 0 OR vag.BATTER_TEAM_ID = :batterTeamId) " +
+		       "AND (:pitcherTeamId = 0 OR vag.PITCHER_TEAM_ID = :pitcherTeamId) " +
+		       "AND (:batterId IS NULL OR vag.BATTER_ID = :batterId) " +
+		       "AND (:pitcherId IS NULL OR vag.PITCHER_ID = :pitcherId) " +
+		       "AND (" +
+		       "    :selectedYear = '通算' OR (" +
+		       "        vag.GAME_DATE BETWEEN STR_TO_DATE(CONCAT(:selectedYear, '-01-01'), '%Y-%m-%d') " +
+		       "        AND STR_TO_DATE(CONCAT(:selectedYear, '-12-31'), '%Y-%m-%d')" +
+		       "    )" +
+		       ")", nativeQuery = true)
+		List<VAtBatGameDetails> findByBatterAndPitcher(
+		        @Param("pitcherTeamId") Long pitcherTeamId,
+		        @Param("batterTeamId") Long batterTeamId,
+		        @Param("pitcherId") Long pitcherId,
+		        @Param("batterId") Long batterId,
+		        @Param("selectedYear") String selectedYear);
 }
