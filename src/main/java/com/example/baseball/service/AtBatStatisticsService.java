@@ -1,10 +1,10 @@
 package com.example.baseball.service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -20,84 +20,86 @@ import com.example.baseball.util.BaseballUtil;
  */
 @Service
 public class AtBatStatisticsService {
-	public List<MatchResult> retrieveAtBatResults(List<VAtBatGameDetails> atBatResult, Long pitcherId, Long batterId){
-		List<MatchResult> AtBatResultList = new ArrayList<>();
-       		// 打者選択の場合
-		if (pitcherId == null) {
-	        // Map を直接処理し、並列ストリームを使用
-	        AtBatResultList = atBatResult.stream()
-	                .collect(Collectors.groupingBy(VAtBatGameDetails::getPitcherId))
-	                .values()
-	                .parallelStream()
-	                .map(this::calcAtBatResult)
-	                .sorted(Comparator.comparing(MatchResult::getPitcherTeamId)
-	                        .thenComparing(Comparator.comparing(MatchResult::getAtBatNumber).reversed()))
-	                .collect(Collectors.toList());
-	    } else if (batterId == null) {
-	        AtBatResultList = atBatResult.stream()
-	                .collect(Collectors.groupingBy(VAtBatGameDetails::getBatterId))
-	                .values()
-	                .parallelStream()
-	                .map(this::calcAtBatResult)
-	                .sorted(Comparator.comparing(MatchResult::getBatterTeamId)
-	                        .thenComparing(Comparator.comparing(MatchResult::getAtBatNumber).reversed()))
-	                .collect(Collectors.toList());
-	    } else {
-	        AtBatResultList = Collections.singletonList(calcAtBatResult(atBatResult));
-	    }
 
-	    return AtBatResultList;
-	}
-	
+    public List<MatchResult> retrieveAtBatResults(List<VAtBatGameDetails> atBatResults, Long pitcherId, Long batterId) {
+        if (pitcherId == null) {
+            return processResults(atBatResults, VAtBatGameDetails::getPitcherId, MatchResult::getPitcherTeamId);
+        } else if (batterId == null) {
+            return processResults(atBatResults, VAtBatGameDetails::getBatterId, MatchResult::getBatterTeamId);
+        } else {
+            return Collections.singletonList(calcAtBatResult(atBatResults));
+        }
+    }
+
+    private List<MatchResult> processResults(List<VAtBatGameDetails> atBatResults, 
+                                             Function<VAtBatGameDetails, Long> groupingFunction,
+                                             Function<MatchResult, Long> sortingFunction) {
+        return atBatResults.stream()
+                .collect(Collectors.groupingBy(groupingFunction))
+                .values()
+                .stream()
+                .map(this::calcAtBatResult)
+                .sorted(Comparator.comparing(sortingFunction)
+                        .thenComparing(Comparator.comparing(MatchResult::getAtBatNumber).reversed()))
+                .collect(Collectors.toList());
+    }
+
 	/**
 	 * 打率等を計算する
 	 * @param atBatResult
 	 * @return
 	 */
-	public MatchResult calcAtBatResult(List<VAtBatGameDetails> atBatResult) {
-		MatchResult matchResult = new MatchResult();
-	    VAtBatGameDetails firstRecord = atBatResult.get(0);
-	    matchResult.setBatterNm(firstRecord.getBatterNm());
-	    matchResult.setBatterNpbUrl(firstRecord.getBatterNpbUrl());
-	    Set<Long> uniqueBatterTeamIds = atBatResult.stream()
-	            .map(VAtBatGameDetails::getBatterTeamId)
-	            .collect(Collectors.toSet());
-	    if (uniqueBatterTeamIds.size() > 1) {
-	        matchResult.setBatterTeamId(13L);
-	        matchResult.setBatterTeamNm("複数");
-	    } else {
-	        matchResult.setBatterTeamId(firstRecord.getBatterTeamId());
-	        matchResult.setBatterTeamNm(firstRecord.getBatterTeamShortNm());
-	    }
-	    matchResult.setPitcherNm(firstRecord.getPitcherNm());
-	    matchResult.setPitcherNpbUrl(firstRecord.getPitcherNpbUrl());
-	    Set<Long> uniquePitcherTeamIds = atBatResult.stream()
+    public MatchResult calcAtBatResult(List<VAtBatGameDetails> atBatResults) {
+        MatchResult matchResult = new MatchResult();
+        VAtBatGameDetails firstRecord = atBatResults.get(0);
+
+        setCommonMatchResultProperties(matchResult, firstRecord, atBatResults);
+
+        matchResult.setBattingAverage(BaseballUtil.calculateBattingAverage(atBatResults));
+        matchResult.setAtBatNumber(atBatResults.size());
+        matchResult.setStrokesNumber(BaseballUtil.calculateStrokesNumber(atBatResults));
+        matchResult.setHitNumber(BaseballUtil.calculateHitNumber(atBatResults));
+        matchResult.setSinglesNumber(BaseballUtil.calculateSinglesNumber(atBatResults));
+        matchResult.setDoublesNumber(BaseballUtil.calculateDoublesNumber(atBatResults));
+        matchResult.setTriplesNumber(BaseballUtil.calculateTriplesNumber(atBatResults));
+        matchResult.setHomeRun(BaseballUtil.calculateHomeRun(atBatResults));
+        matchResult.setBaseHitsNumber(BaseballUtil.calculateBaseHitsNumber(atBatResults));
+        matchResult.setFourBallNumber(BaseballUtil.calculateFourBallNumber(atBatResults));
+        matchResult.setHitBallNumber(BaseballUtil.calculateHitBallNumber(atBatResults));
+        matchResult.setSacrificeFly(BaseballUtil.calculateSacrificeFly(atBatResults));
+        matchResult.setStrikeoutsNumber(BaseballUtil.calculateStrikeoutsNumber(atBatResults));
+        matchResult.setOps(BaseballUtil.calculateOps(atBatResults));
+        matchResult.setOnBasePercentage(BaseballUtil.calculateOnBasePercentage(atBatResults));
+        matchResult.setSluggingPercentage(BaseballUtil.calculateSluggingPercentage(atBatResults));
+        return matchResult;
+    }
+
+    private void setCommonMatchResultProperties(MatchResult matchResult, VAtBatGameDetails firstRecord, List<VAtBatGameDetails> atBatResults) {
+        matchResult.setBatterNm(firstRecord.getBatterNm());
+        matchResult.setBatterNpbUrl(firstRecord.getBatterNpbUrl());
+        
+        Set<Long> uniqueBatterTeamIds = atBatResults.stream()
+                .map(VAtBatGameDetails::getBatterTeamId)
+                .collect(Collectors.toSet());
+        if (uniqueBatterTeamIds.size() > 1) {
+            matchResult.setBatterTeamId(13L);
+            matchResult.setBatterTeamNm("複数");
+        } else {
+            matchResult.setBatterTeamId(firstRecord.getBatterTeamId());
+            matchResult.setBatterTeamNm(firstRecord.getBatterTeamShortNm());
+        }
+        
+        matchResult.setPitcherNm(firstRecord.getPitcherNm());
+        matchResult.setPitcherNpbUrl(firstRecord.getPitcherNpbUrl());
+        Set<Long> uniquePitcherTeamIds = atBatResults.stream()
                 .map(VAtBatGameDetails::getPitcherTeamId)
                 .collect(Collectors.toSet());
-	    if(uniquePitcherTeamIds.size() > 1) {
-			matchResult.setPitcherTeamId(13L);
-			matchResult.setPitcherTeamNm("複数");
-	    }else {
-		matchResult.setPitcherTeamId(firstRecord.getPitcherTeamId());
-		matchResult.setPitcherTeamNm(firstRecord.getPitcherTeamShortNm());
-	    }
-		matchResult.setBattingAverage(BaseballUtil.calculateBattingAverage(atBatResult));
-		matchResult.setAtBatNumber(atBatResult.size());
-		matchResult.setStrokesNumber(BaseballUtil.calculateStrokesNumber(atBatResult));
-		matchResult.setHitNumber(BaseballUtil.calculateHitNumber(atBatResult));
-		matchResult.setSinglesNumber(BaseballUtil.calculateSinglesNumber(atBatResult));
-		matchResult.setDoublesNumber(BaseballUtil.calculateDoublesNumber(atBatResult));
-		matchResult.setTriplesNumber(BaseballUtil.calculateTriplesNumber(atBatResult));
-		matchResult.setHomeRun(BaseballUtil.calculateHomeRun(atBatResult));
-		matchResult.setBaseHitsNumber(BaseballUtil.calculateBaseHitsNumber(atBatResult));
-		matchResult.setFourBallNumber(BaseballUtil.calculateFourBallNumber(atBatResult));
-		matchResult.setHitBallNumber(BaseballUtil.calculateHitBallNumber(atBatResult));
-		matchResult.setSacrificeFly(BaseballUtil.calculateSacrificeFly(atBatResult));
-		matchResult.setStrikeoutsNumber(BaseballUtil.calculateStrikeoutsNumber(atBatResult));
-		matchResult.setOps(BaseballUtil.calculateOps(atBatResult));
-		matchResult.setOnBasePercentage(BaseballUtil.calculateOnBasePercentage(atBatResult));
-		matchResult.setSluggingPercentage(BaseballUtil.calculateSluggingPercentage(atBatResult));
-		return matchResult;
-	}
-
+        if (uniquePitcherTeamIds.size() > 1) {
+            matchResult.setPitcherTeamId(13L);
+            matchResult.setPitcherTeamNm("複数");
+        } else {
+            matchResult.setPitcherTeamId(firstRecord.getPitcherTeamId());
+            matchResult.setPitcherTeamNm(firstRecord.getPitcherTeamShortNm());
+        }
+    }
 }
