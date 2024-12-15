@@ -39,84 +39,90 @@ export default {
     this.getInitData();
   },
   methods: {
-    async getInitData() {
-      this.isLoading = true;
-      try {
-        const response = await this.$axios.get("/getInitData");
-        if (response.status === 200) {
-          this.baseballTeamList = response.data.baseballTeam;
-          this.years = response.data.years;
-          this.years.unshift("通算");
-        }
-      } catch (error) {
-        if (error.response) {
-          alert(error.response.data.message);
-        } else {
-          alert("初期表示エラー");
-        }
-      } finally {
-        this.isLoading = false;
-      }
-    },
+async getInitData() {
+  this.isLoading = true;
+  try {
+    const response = await this.$axios.get("/getInitData");
+    console.log(response);
+    if (response.status === 200) {
+      // ResponseDto形式に対応
+      const responseData = response.data.data;
+      this.baseballTeamList = responseData.baseballTeam || [];
+      this.years = responseData.years || [];
+      this.years.unshift("通算");
+    }
+  } catch (error) {
+    if (error.response) {
+      alert(error.response.data.message);
+    } else {
+      alert("初期表示エラー");
+    }
+  } finally {
+    this.isLoading = false;
+  }
+},
     async getPitcherList(teamId, year) {
-      try {
-        const response = await this.$axios.get("/getPitcherList", {
-          params: { teamId: teamId, year: year },
-        });
-        if (response.status === 200) {
-          this.pitcherList = response.data.pitcherListt;
-        }
-      } catch (error) {
-        if (error.response) {
-          alert(error.response.data.message);
-        } else {
-          alert("ピッチャーの取得に失敗しました");
-        }
-      }
-    },
+  try {
+    const response = await this.$axios.get("/getPitcherList", {
+      params: { teamId: teamId, year: year },
+    });
+    if (response.status === 200) {
+      const responseData = response.data.data;
+      this.pitcherList = responseData.pitcherList || [];
+    }
+  } catch (error) {
+    if (error.response) {
+      alert(error.response.data.message);
+    } else {
+      alert("ピッチャーの取得に失敗しました");
+    }
+  }
+},
     async getBatterList(teamId, year) {
-      try {
-        const response = await this.$axios.get("/getBatterList", {
-          params: { teamId: teamId, year: year },
-        });
-        if (response.status === 200) {
-          this.batterList = response.data.batterList;
-        }
-      } catch (error) {
-        if (error.response) {
-          alert(error.response.data.message);
-        } else {
-          alert("バッターの取得に失敗しました");
-        }
-      }
-    },
-    async matchResultSearch(pitcherTeamId, batterTeamId, pitcherId, batterId, selectedYear) {
-      this.isLoading = true;
-      try {
-        const response = await this.$axios.get("/matchResultSearch", {
-          params: {
-            pitcherTeamId: pitcherTeamId,
-            batterTeamId: batterTeamId,
-            pitcherId: pitcherId,
-            batterId: batterId,
-            selectedYear: selectedYear,
-          },
-        });
-        if (response.status === 200) {
-          this.matchResultList = response.data.matchResult;
-          this.errorMessage = "";
-        }
-      } catch (error) {
-        this.matchResultList = [];
-        if (error.response && error.response.data && error.response.data.message) {
-          this.errorMessage = error.response.data.message;
-        } else {
-          this.errorMessage = "対戦結果の取得に失敗しました";
-        }
-      } finally {
-        this.isLoading = false;
-      }
-    },
+  try {
+    const response = await this.$axios.get("/getBatterList", {
+      params: { teamId: teamId, year: year },
+    });
+    if (response.status === 200) {
+      const responseData = response.data.data;
+      this.batterList = responseData.batterList || [];
+    }
+  } catch (error) {
+    if (error.response) {
+      alert(error.response.data.message);
+    } else {
+      alert("バッターの取得に失敗しました");
+    }
+  }
+},
+   async matchResultSearch(pitcherTeamId, batterTeamId, pitcherId, batterId, selectedYear) {
+  this.isLoading = true;
+  try {
+    const response = await this.$axios.get("/matchResultSearch", {
+      params: {
+        pitcherTeamId: pitcherTeamId,
+        batterTeamId: batterTeamId,
+        pitcherId: pitcherId,
+        batterId: batterId,
+        selectedYear: selectedYear,
+      },
+    });
+    if (response.status === 200) {
+      const responseData = response.data.data;
+      this.matchResultList = responseData.matchResult || [];
+      this.errorMessage = "";
+    }
+  } catch (error) {
+    this.matchResultList = [];
+    if (error.response && error.response.data && error.response.data.message) {
+      this.errorMessage = error.response.data.message;
+    } else {
+      this.errorMessage = "対戦結果の取得に失敗しました";
+    }
+  } finally {
+    this.isLoading = false;
+  }
+},
   },
 };
 </script>
