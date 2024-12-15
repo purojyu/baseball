@@ -72,7 +72,7 @@ public class BaseballController {
 	    List<PlayerProjection> pitcherList = vBaseballPlayerHistoryService.findPitcherByTeamIdAndYear(teamId, "1", year);
 	    if (pitcherList.isEmpty()) {
 	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-	                .body(ResponseDto.builder().message("ピッチャーの取得に失敗しました").build());
+	                .body(ResponseDto.builder().message(NO_PITCHERS_FOUND).build());
 	    }
 
 	    ResponseDto response = ResponseDto.builder()
@@ -96,7 +96,7 @@ public class BaseballController {
 	    List<PlayerProjection> batterList = vBaseballPlayerHistoryService.findBatterByTeamIdAndYear(teamId, year);
 	    if (batterList.isEmpty()) {
 	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-	                .body(ResponseDto.builder().message("バッターの取得に失敗しました").build());
+	                .body(ResponseDto.builder().message(NO_BATTERS_FOUND).build());
 	    }
 
 	    ResponseDto response = ResponseDto.builder()
@@ -128,7 +128,7 @@ public class BaseballController {
 
 	        if (atBatResult.isEmpty()) {
 	            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-	                    .body(ResponseDto.builder().message("対戦結果がありませんでした。").build());
+	                    .body(ResponseDto.builder().message(NO_MATCH_RESULT).build());
 	        }
 
 	        List<MatchResult> atBatResultList = atBatStatisticsService.retrieveAtBatResults(atBatResult, pitcherId, batterId);
