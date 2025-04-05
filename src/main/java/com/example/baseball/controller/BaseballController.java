@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/baseball/api")
 public class BaseballController {
-
+	
 	private static final String SUCCESS_MESSAGE = "Success";
 	private static final String NO_PITCHERS_FOUND = "ピッチャーの取得に失敗しました";
 	private static final String NO_BATTERS_FOUND = "バッターの取得に失敗しました";

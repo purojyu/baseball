@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -17,16 +19,19 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.example.baseball.entity.AtBatResult;
 import com.example.baseball.entity.BaseballGame;
+import com.example.baseball.entity.BaseballPlayer;
+import com.example.baseball.entity.BaseballPlayerHistory;
 import com.example.baseball.entity.BaseballTeam;
-import com.example.baseball.entity.VBaseballPlayerHistory;
 import com.example.baseball.service.AtBatResultService;
 import com.example.baseball.service.BaseballGameService;
+import com.example.baseball.service.BaseballPlayerHistoryService;
+import com.example.baseball.service.BaseballPlayerService;
 import com.example.baseball.service.BaseballTeamService;
-import com.example.baseball.service.VBaseballPlayerHistoryService;
 import com.example.scraper.entity.BatterPitcherInfoList;
 import com.example.scraper.entity.BatterResults;
 import com.example.scraper.entity.ConvBatterResults;
@@ -38,29 +43,37 @@ import com.example.scraper.entity.PitcherResults;
  */
 @Component
 public class NPBWebScraper {
+	
+	DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy年M月d日"); // 日本語フォーマット
+	DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy/MM/dd"); // スラッシュ区切り
 
 	@Autowired
 	private BaseballTeamService baseballTeamService;
 	@Autowired
 	private BaseballGameService baseballGameService;
 	@Autowired
-	private VBaseballPlayerHistoryService vBaseballPlayerHistoryService;
-	@Autowired
 	private AtBatResultService atBatResultService;
+	@Autowired
+	private BaseballPlayerService baseballPlayerService;
+	@Autowired
+	private BaseballPlayerHistoryService baseballPlayerHistoryService; 
 
 	private static final List<String> years = Arrays.asList(
-			"2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024");
+//			"2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024","2025");
+			"2025");
 
 	private static final List<String> months = Arrays.asList(
-			//			"03", "04", "05", "06", "07", "08", "09", "10", "11");
-			"10");
+						"03", "04", "05", "06", "07", "08", "09", "10", "11");
 
 	/**
 	 * 打席結果を取得
 	 * @throws IOException
 	 * @throws ParseException
 	 */
+	// 秒   分   時   日   月   曜日
+	@Scheduled(cron = "0 0 9 * * ?", zone = "Asia/Tokyo")
 	public void scrapeData() throws IOException, ParseException {
+		System.out.println("はじまり〜");
 		for (String year : years) {
 			for (String month : months) {
 				String url = "https://npb.jp/games/" + year + "/schedule_" + month + "_detail.html";
@@ -72,6 +85,7 @@ public class NPBWebScraper {
 					for (String gameLink : gameLinks) {
 						// 試合結果を取得
 						BaseballGame baseballGame = getGameInfo(gameLink);
+						System.out.println(baseballGame.getGameDate()+"開始");
 						if (baseballGame != null) {
 							// 打席結果を取得
 							BatterPitcherInfoList batterPitcherInfo = parseGameDetails(gameLink);
@@ -79,11 +93,12 @@ public class NPBWebScraper {
 								convertPlayer(batterPitcherInfo, baseballGame);
 							}
 						}
+						System.out.println(baseballGame.getGameDate()+"終了");
 					}
 				}
 			}
 		}
-		System.out.println("終わり");
+		System.out.println("おわり〜");
 	}
 
 	/**
@@ -278,9 +293,9 @@ public class NPBWebScraper {
 				PitcherResults pitcherResults = new PitcherResults();
 				String playerUrl = cells.get(1).select("a").attr("href");
 				String fullPlayerUrl = "https://npb.jp" + playerUrl;
-				String pitcherName = getPlayerName(fullPlayerUrl);
+				Long playerId = getPlayerName(fullPlayerUrl);
 				String pitchingResults = cells.get(3).text().trim();
-				pitcherResults.setPitcher(pitcherName);
+				pitcherResults.setPitcherId(playerId);
 				pitcherResults.setTeam(team);
 				pitcherResults.setMatchNumber(pitchingResults);
 				pitcherResultsList.add(pitcherResults);
@@ -346,11 +361,11 @@ public class NPBWebScraper {
 			if (cells.size() != 0) {
 				String playerUrl = cells.get(2).select("a").attr("href");
 				String fullPlayerUrl = "https://npb.jp" + playerUrl;
-				String playerName = getPlayerName(fullPlayerUrl);
+				Long playerId = getPlayerName(fullPlayerUrl);
 				String batterResult = cells.get(i).text().trim();
 				if (!batterResult.equals("-")) {
 					BatterResults batterResults = new BatterResults();
-					batterResults.setBatter(playerName);
+					batterResults.setBatterId(playerId);
 					batterResults.setTeam(team);
 					batterResults.setResult(batterResult);
 					batterResultsList.add(batterResults);
@@ -364,18 +379,53 @@ public class NPBWebScraper {
 		return previousRow;
 	}
 
-	public String getPlayerName(String url) {
-		String playerFullName = null;
+	public Long getPlayerName(String url) {
+		Long playerId = null;
 		try {
 			// プレイヤーの詳細ページにアクセス
 			Document playerDoc = Jsoup.connect(url).get();
 			// liタグのid="pc_v_name"を取得
 			Element playerNameElement = playerDoc.selectFirst("#pc_v_name li#pc_v_name");
-			playerFullName = playerNameElement.text().trim();
+			String playerFullName = playerNameElement.text().trim();
+			Elements playerInfo = playerDoc.select("#pc_bio");
+			String birthdDateStr = playerInfo.select("th:contains(生年月日) + td").text();
+			LocalDate birthDate = convertToLocalDate(birthdDateStr);
+			BaseballPlayer baseballPlayer = baseballPlayerService.findByPlayerNmAndBirthDate(playerFullName, birthDate);
+			if(baseballPlayer == null) {
+				BaseballPlayer insBaseballPlayer = new BaseballPlayer();
+				Element playerNameKanaElement = playerDoc.selectFirst("#pc_v_name li#pc_v_kana");
+				Elements positionElement = playerInfo.select("th:contains(ポジション) + td");
+				// ポジションが存在するかチェック
+				if (positionElement != null) {
+					String position = positionElement.text();
+					String positionCd = convPosition(position);
+					insBaseballPlayer.setPosition(positionCd);
+				}
+				String throwingBatting = playerInfo.select("th:contains(投打) + td").text();
+				String handed = convHanded(throwingBatting);
+				String thrower = convThrower(throwingBatting);
+				String heightWeight = playerInfo.select("th:contains(身長／体重) + td").text();
+				// 身長と体重を分割
+				String[] heightWeightArray = heightWeight.split("／");
+				// 身長と体重の文字列から "cm" や "kg" を除いて int に変換
+				int height = Integer.parseInt(heightWeightArray[0].replace("cm", "").trim());
+				int weight = Integer.parseInt(heightWeightArray[1].replace("kg", "").trim());
+				insBaseballPlayer.setPlayerNm(playerFullName);
+				insBaseballPlayer.setBirthDate(birthDate);
+				insBaseballPlayer.setHeight((long) height);
+				insBaseballPlayer.setWeight((long) weight);
+				insBaseballPlayer.setThrower(thrower);
+				insBaseballPlayer.setHanded(handed);
+				insBaseballPlayer.setNpbUrl(url);
+				insBaseballPlayer.setPlayerNmKana(playerNameKanaElement.text());
+				playerId = baseballPlayerService.savePlayer(insBaseballPlayer).getPlayerId();
+			}else {
+			playerId = baseballPlayer.getPlayerId();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return playerFullName;
+		return playerId;
 	}
 
 	/**
@@ -400,11 +450,11 @@ public class NPBWebScraper {
 			if (cells.size() != 0) {
 				String playerUrl = cells.get(2).select("a").attr("href");
 				String fullPlayerUrl = "https://npb.jp" + playerUrl;
-				String playerName = getPlayerName(fullPlayerUrl);
+				Long playerId = getPlayerName(fullPlayerUrl);
 				String batterResult = cells.get(i).text().trim();
 				if (!batterResult.equals("-")) {
 					BatterResults batterResults = new BatterResults();
-					batterResults.setBatter(playerName);
+					batterResults.setBatterId(playerId);
 					batterResults.setTeam(team);
 					batterResults.setResult(batterResult);
 					batterResultsList.add(batterResults);
@@ -419,11 +469,11 @@ public class NPBWebScraper {
 			if (cells.size() != 0) {
 				String playerUrl = cells.get(2).select("a").attr("href");
 				String fullPlayerUrl = "https://npb.jp" + playerUrl;
-				String playerName = getPlayerName(fullPlayerUrl);
+				Long playerId = getPlayerName(fullPlayerUrl);
 				String batterResult = cells.get(i).text().trim();
 				if (!batterResult.equals("-")) {
 					BatterResults batterResults = new BatterResults();
-					batterResults.setBatter(playerName);
+					batterResults.setBatterId(playerId);
 					batterResults.setTeam(team);
 					batterResults.setResult(batterResult);
 					batterResultsList.add(batterResults);
@@ -447,12 +497,10 @@ public class NPBWebScraper {
 			try {
 				ConvBatterResults convBatterResults = new ConvBatterResults();
 				BaseballTeam baseballTeam = baseballTeamService.findByTeamNm(batterInfo.getTeam());
-				VBaseballPlayerHistory baseballPlayer = vBaseballPlayerHistoryService
-						.findByPlayerNmAndTeamId(
-								baseballTeam.getTeamId(),
-								batterInfo.getBatter(), baseballGame.getGameDate());
+				// historyテーブルの整合性を担保
+				createOrUpdatePlayerHistory(baseballTeam.getTeamId(), batterInfo.getBatterId(), baseballGame.getGameDate());
 				convBatterResults.setTeamId(baseballTeam.getTeamId());
-				convBatterResults.setBatterId(baseballPlayer.getPlayerId());
+				convBatterResults.setBatterId(batterInfo.getBatterId());
 				convBatterResults.setResult(batterInfo.getResult());
 				topConvBatterResultList.add(convBatterResults);
 			} catch (Exception e) {
@@ -466,12 +514,9 @@ public class NPBWebScraper {
 			try {
 				ConvBatterResults convBatterResults = new ConvBatterResults();
 				BaseballTeam baseballTeam = baseballTeamService.findByTeamNm(batterInfo.getTeam());
-				VBaseballPlayerHistory baseballPlayer = vBaseballPlayerHistoryService
-						.findByPlayerNmAndTeamId(
-								baseballTeam.getTeamId(),
-								batterInfo.getBatter(), baseballGame.getGameDate());
+				createOrUpdatePlayerHistory(baseballTeam.getTeamId(), batterInfo.getBatterId(), baseballGame.getGameDate());
 				convBatterResults.setTeamId(baseballTeam.getTeamId());
-				convBatterResults.setBatterId(baseballPlayer.getPlayerId());
+				convBatterResults.setBatterId(batterInfo.getBatterId());
 				convBatterResults.setResult(batterInfo.getResult());
 				bottomConvBatterResultList.add(convBatterResults);
 			} catch (Exception e) {
@@ -485,12 +530,10 @@ public class NPBWebScraper {
 			try {
 				ConvPitcherResults convPitcherResults = new ConvPitcherResults();
 				BaseballTeam baseballTeam = baseballTeamService.findByTeamNm(pitcherInfo.getTeam());
-				VBaseballPlayerHistory baseballPlayer = vBaseballPlayerHistoryService
-						.findByPlayerNmAndTeamId(
-								baseballTeam.getTeamId(),
-								pitcherInfo.getPitcher(), baseballGame.getGameDate());
+				// historyテーブルの整合性を担保
+				createOrUpdatePlayerHistory(baseballTeam.getTeamId(), pitcherInfo.getPitcherId(), baseballGame.getGameDate());
 				convPitcherResults.setTeamId(baseballTeam.getTeamId());
-				convPitcherResults.setPitcherId(baseballPlayer.getPlayerId());
+				convPitcherResults.setPitcherId(pitcherInfo.getPitcherId());
 				convPitcherResults.setMatchNumber(Long.valueOf(pitcherInfo.getMatchNumber()));
 				topConvPitcherResultList.add(convPitcherResults);
 			} catch (Exception e) {
@@ -504,12 +547,9 @@ public class NPBWebScraper {
 			try {
 				ConvPitcherResults convPitcherResults = new ConvPitcherResults();
 				BaseballTeam baseballTeam = baseballTeamService.findByTeamNm(pitcherInfo.getTeam());
-				VBaseballPlayerHistory baseballPlayer = vBaseballPlayerHistoryService
-						.findByPlayerNmAndTeamId(
-								baseballTeam.getTeamId(),
-								pitcherInfo.getPitcher(), baseballGame.getGameDate());
+				createOrUpdatePlayerHistory(baseballTeam.getTeamId(), pitcherInfo.getPitcherId(), baseballGame.getGameDate());
 				convPitcherResults.setTeamId(baseballTeam.getTeamId());
-				convPitcherResults.setPitcherId(baseballPlayer.getPlayerId());
+				convPitcherResults.setPitcherId(pitcherInfo.getPitcherId());
 				convPitcherResults.setMatchNumber(Long.valueOf(pitcherInfo.getMatchNumber()));
 				bottomConvPitcherResultList.add(convPitcherResults);
 			} catch (Exception e) {
@@ -554,6 +594,93 @@ public class NPBWebScraper {
 			}
 		}
 		atBatResultService.saveAtBatResult(atBatResultList);
-		System.out.print(baseballGame.getGameId() + ",");
+	}
+	
+	/**
+	 * playerHistoryの整合性を担保するために、追加・更新する
+	 * 
+	 * @param teamId
+	 * @param playerId
+	 * @param gameDate
+	 */
+	private void createOrUpdatePlayerHistory(Long teamId,Long playerId,Date gameDate) {
+		BaseballPlayerHistory baseballPlayerHistoryByTeam = baseballPlayerHistoryService.findByPlayerIdAndteamId(playerId,teamId);
+		// テームと選手ID二一致するhistoryが存在しない場合
+		if(baseballPlayerHistoryByTeam == null) {
+			BaseballPlayerHistory baseballPlayerHistory = baseballPlayerHistoryService.findByPlayerId(playerId);
+			// 選手のhistoryが存在しない場合
+			if(baseballPlayerHistory == null) {
+				BaseballPlayerHistory insBaseballPlayerHistory = new BaseballPlayerHistory();
+				insBaseballPlayerHistory.setPlayerId(teamId);
+				insBaseballPlayerHistory.setTeamId(teamId);
+				insBaseballPlayerHistory.setStartDate(gameDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+			// 選手のhistoryが存在する場合(チーム移籍等)
+			}else {
+				// ゲーム日付の前日に更新する
+				baseballPlayerHistory.setEndDate(gameDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().minusDays(1));
+				BaseballPlayerHistory insBaseballPlayerHistory = new BaseballPlayerHistory();
+				insBaseballPlayerHistory.setPlayerId(teamId);
+				insBaseballPlayerHistory.setTeamId(teamId);
+				insBaseballPlayerHistory.setStartDate(gameDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+			}
+		}
+	}
+	
+	// LocalDate型に変換するメソッド
+	public LocalDate convertToLocalDate(String dateStr) {
+		try {
+			// 最初に日本語フォーマットを試す
+			return LocalDate.parse(dateStr, formatter1);
+		} catch (DateTimeParseException e) {
+			// 失敗したらスラッシュ区切りのフォーマットを試す
+			try {
+				return LocalDate.parse(dateStr, formatter2);
+			} catch (DateTimeParseException ex) {
+				ex.printStackTrace();
+				return null;
+			}
+		}
+	}
+	/**
+	 * DBの登録用にポジションをポジションCDに変更
+	 */
+	public String convPosition(String position) {
+		switch (position) {
+		case "投　手":
+			return "1";
+		case "捕　手":
+			return "2";
+		case "内野手":
+			return "3";
+		case "外野手":
+			return "4";
+		default:
+			return null;
+		}
+	}
+	// 投打を変換('投げ　0:右投げ　1:左投げ　2:両投げ')
+	public String convThrower(String throwingBatting) {
+		String throwingCd = null;
+		if (throwingBatting.contains("右投")) {
+			throwingCd = "0";
+		} else if (throwingBatting.contains("左投")) {
+			throwingCd = "1";
+		} else if (throwingBatting.contains("両投")) {
+			throwingCd = "2";
+		}
+		return throwingCd;
+	}
+
+	// 投打を変換('打者　0:右打ち　1:左打ち　2:両打ち')
+	public String convHanded(String throwingBatting) {
+		String throwingCd = null;
+		if (throwingBatting.contains("右打")) {
+			throwingCd = "0";
+		} else if (throwingBatting.contains("左打")) {
+			throwingCd = "1";
+		} else if (throwingBatting.contains("両打")) {
+			throwingCd = "2";
+		}
+		return throwingCd;
 	}
 }

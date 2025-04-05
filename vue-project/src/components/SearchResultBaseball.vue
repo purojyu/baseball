@@ -3,11 +3,15 @@
     <table v-if="matchResultList.length" class="table" ref="resultsTable">
       <thead>
         <tr>
-          <th v-for="field in fields" :key="field.key" class="th">{{ field.label }}</th>
+          <th v-for="field in fields" :key="field.key" :class="['th', { 'th-active': sortKey === field.key }]">
+            <button @click="sortBy(field.key)" :class="['sort-button', { active: sortKey === field.key }]" :data-sort-direction="sortKey === field.key ? (sortAsc ? '▲' : '▼') : '↕️'">
+              {{ field.label }}
+            </button>
+          </th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(item, index) in matchResultList" :key="index">
+        <tr v-for="(item, index) in sortedMatchResultList" :key="index">
           <td v-for="field in fields" :key="field.key" :class="['td', getCellClass(field.key, item)]">
             <template v-if="field.key === 'pitcherNm'">
               <a :href="item.pitcherNpbUrl" target="_blank" rel="noopener noreferrer">{{ item.pitcherNm }}</a>
@@ -29,7 +33,6 @@
 </template>
 
 <script>
-// スクリプト部分は変更なし
 export default {
   name: "SearchResultBaseball",
   props: {
@@ -62,7 +65,23 @@ export default {
         { key: "onBasePercentage", label: "出塁率" },
         { key: "sluggingPercentage", label: "長打率" },
       ],
+      sortKey: "",
+      sortAsc: true,
     };
+  },
+  computed: {
+    sortedMatchResultList() {
+      if (!this.sortKey) return this.matchResultList;
+      return [...this.matchResultList].sort((a, b) => {
+        const aVal = a[this.sortKey];
+        const bVal = b[this.sortKey];
+        if (typeof aVal === "number" && typeof bVal === "number") {
+          return this.sortAsc ? aVal - bVal : bVal - aVal;
+        } else {
+          return this.sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+        }
+      });
+    },
   },
   watch: {
     matchResultList(newVal) {
@@ -105,6 +124,14 @@ export default {
         return this.getTeamClass(item.pitcherTeamId);
       }
       return "";
+    },
+    sortBy(key) {
+      if (this.sortKey === key) {
+        this.sortAsc = !this.sortAsc;
+      } else {
+        this.sortKey = key;
+        this.sortAsc = true;
+      }
     },
   },
 };
@@ -231,6 +258,54 @@ tbody tr:hover {
 .default-team {
   background-color: #cccccc;
   color: #000000;
+}
+
+.sort-button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: inherit;
+  font-weight: inherit;
+}
+.sort-button:focus {
+  outline: none;
+}
+
+/* ヘッダーのスタイル改善 */
+.th .sort-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+  padding-right: 15px; /* アイコン用のスペース確保 */
+}
+
+/* デフォルトのソートアイコン（未ソート状態） */
+.sort-button::after {
+  content: "↕️";
+  font-size: 0.7rem;
+  opacity: 0.5;
+  position: absolute;
+  right: 0;
+}
+
+/* アクティブなソートの状態 */
+.sort-button.active::after {
+  opacity: 1;
+  content: attr(data-sort-direction);
+}
+
+/* ホバー効果 */
+.sort-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+}
+
+/* アクティブなヘッダーの強調 */
+.th-active {
+  background-color: #385bc0; /* 通常よりも少し暗い色 */
 }
 
 @media (max-width: 768px) {

@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class PitcherResults {
 private String team;
-private String pitcher;
+private Long pitcherId;
 private String matchNumber;
 }
