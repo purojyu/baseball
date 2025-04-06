@@ -19,7 +19,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.example.baseball.entity.AtBatResult;
@@ -70,8 +69,8 @@ public class NPBWebScraper {
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	// 秒   分   時   日   月   曜日
-	@Scheduled(cron = "0 0 9 * * ?", zone = "Asia/Tokyo")
+	// 秒   分   時   日   月   曜日  herokuのapiで定期実行するのでコメントアウト
+//	@Scheduled(cron = "0 0 9 * * ?", zone = "Asia/Tokyo")
 	public void scrapeData() throws IOException, ParseException {
 		System.out.println("はじまり〜");
 		for (String year : years) {
