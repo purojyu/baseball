@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,8 +44,10 @@ import com.example.scraper.entity.PitcherResults;
 @Component
 public class NPBWebScraper {
 	
-	DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy年M月d日"); // 日本語フォーマット
-	DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy/MM/dd"); // スラッシュ区切り
+	DateTimeFormatter formatter1 =
+	        DateTimeFormatter.ofPattern("yyyy年M月d日", Locale.JAPANESE);
+	DateTimeFormatter formatter2 =
+	        DateTimeFormatter.ofPattern("yyyy/MM/dd", Locale.JAPANESE);
 
 	@Autowired
 	private BaseballTeamService baseballTeamService;
@@ -84,15 +87,15 @@ public class NPBWebScraper {
 					for (String gameLink : gameLinks) {
 						// 試合結果を取得
 						BaseballGame baseballGame = getGameInfo(gameLink);
-						System.out.println(baseballGame.getGameDate()+"開始");
 						if (baseballGame != null) {
+							System.out.println(baseballGame.getGameDate()+"開始");
 							// 打席結果を取得
 							BatterPitcherInfoList batterPitcherInfo = parseGameDetails(gameLink);
 							if (batterPitcherInfo != null) {
 								convertPlayer(batterPitcherInfo, baseballGame);
 							}
+							System.out.println(baseballGame.getGameDate()+"終了");
 						}
-						System.out.println(baseballGame.getGameDate()+"終了");
 					}
 				}
 			}
@@ -239,7 +242,7 @@ public class NPBWebScraper {
 
 		Element timeElement = doc.select("time").first();
 		String time = timeElement.text();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年M月d日（E）");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年M月d日（E）", Locale.JAPANESE);
 		Date date = dateFormat.parse(time);
 		// 日付をyyyy/MM/dd形式の文字列に変換
 		SimpleDateFormat outputDateFormat = new SimpleDateFormat("yyyy/MM/dd");
@@ -603,26 +606,27 @@ public class NPBWebScraper {
 	 * @param gameDate
 	 */
 	private void createOrUpdatePlayerHistory(Long teamId,Long playerId,Date gameDate) {
-		BaseballPlayerHistory baseballPlayerHistoryByTeam = baseballPlayerHistoryService.findByPlayerIdAndteamId(playerId,teamId);
-		// テームと選手ID二一致するhistoryが存在しない場合
-		if(baseballPlayerHistoryByTeam == null) {
-			BaseballPlayerHistory baseballPlayerHistory = baseballPlayerHistoryService.findByPlayerId(playerId);
-			// 選手のhistoryが存在しない場合
-			if(baseballPlayerHistory == null) {
-				BaseballPlayerHistory insBaseballPlayerHistory = new BaseballPlayerHistory();
-				insBaseballPlayerHistory.setPlayerId(teamId);
-				insBaseballPlayerHistory.setTeamId(teamId);
-				insBaseballPlayerHistory.setStartDate(gameDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-			// 選手のhistoryが存在する場合(チーム移籍等)
-			}else {
-				// ゲーム日付の前日に更新する
-				baseballPlayerHistory.setEndDate(gameDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().minusDays(1));
-				BaseballPlayerHistory insBaseballPlayerHistory = new BaseballPlayerHistory();
-				insBaseballPlayerHistory.setPlayerId(teamId);
-				insBaseballPlayerHistory.setTeamId(teamId);
-				insBaseballPlayerHistory.setStartDate(gameDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-			}
-		}
+	    // ① すでに同じチームで当該日以降の履歴があれば何もしない
+	    BaseballPlayerHistory sameTeamHistory =
+	        baseballPlayerHistoryService.findByPlayerIdAndteamId(playerId, teamId);
+	    if (sameTeamHistory != null) {
+	        return;
+	    }
+
+	    // ② アクティブな（終了日が null の）履歴を終了させる
+	    BaseballPlayerHistory activeHistory =
+	        baseballPlayerHistoryService.findByPlayerId(playerId);
+	    if (activeHistory != null) {
+	    	activeHistory.setEndDate(gameDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().minusDays(1));
+	        baseballPlayerHistoryService.saveBaseballPlayerHistory(activeHistory);
+	    }
+
+	    // ③ 新しい履歴を追加
+	    BaseballPlayerHistory newHistory = new BaseballPlayerHistory();
+	    newHistory.setPlayerId(playerId);
+	    newHistory.setTeamId(teamId);
+	    newHistory.setStartDate(gameDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+	    baseballPlayerHistoryService.saveBaseballPlayerHistory(newHistory);
 	}
 	
 	// LocalDate型に変換するメソッド
