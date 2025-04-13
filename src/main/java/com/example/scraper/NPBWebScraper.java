@@ -111,35 +111,34 @@ public class NPBWebScraper {
 	 * @throws ParseException 
 	 */
 	private List<String> getGameLinks(String url, String year) throws IOException, ParseException {
-		Document doc = Jsoup.connect(url).get();
-		List<String> gameLinks = new ArrayList<>();
-		Elements gamelinks = doc.select("a[href]");
-		Pattern pattern = Pattern.compile("/scores/" + year + "/(\\d{4})/");
-		for (Element gamelink : gamelinks) {
-			Matcher matcherGameLink = pattern.matcher(gamelink.attr("href"));
-			if (matcherGameLink.find()) {
-				// ゲームの日付を取得
-				String gameDateStr = matcherGameLink.group(1);
-				String fullLinkDate = year + gameDateStr;
-				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-				Date gameDate = dateFormat.parse(fullLinkDate);
-				// 既存のゲームの日付を取得
-				List<BaseballGame> baseballGame = baseballGameService.findByGameDate(gameDate);
-				// 取得していないゲーム日付の場合
-				if (baseballGame.size() == 0) {
-					Element parent = gamelink.parent();
-					// 中止の試合を取得
-					Elements cancelDivs = parent.select("div.cancel");
-					// 中止の試合を除外
-					if (cancelDivs.isEmpty()) {
-						gameLinks.add("https://npb.jp" + gamelink.attr("href") + "box.html");
-					}
-				}
-			}
-		}
-		return gameLinks;
-	}
+	    Document doc = Jsoup.connect(url).get();
+	    List<String> gameLinks = new ArrayList<>();
 
+	    for (Element row : doc.select("tr[id^=date]")) {
+
+	        // 「中止」「ノーゲーム」が入っていたらスキップ
+	        if (row.selectFirst("div.cancel") != null) continue;
+
+	        // 対戦カードへの a[href] を取得
+	        Element linkTag = row.selectFirst("a[href]");
+	        if (linkTag == null) continue;
+
+	        // URL から年月日を抜き出し Date に変換
+	        Matcher m = Pattern.compile("/scores/(\\d{4})/(\\d{4})/").matcher(linkTag.attr("href"));
+	        if (!m.find()) continue;
+	        String fullDate = m.group(1) + m.group(2);         // yyyyMMdd
+	        Date gameDate = new SimpleDateFormat("yyyyMMdd").parse(fullDate);
+
+	        Long homeTeamId =  Long.valueOf(convTeam(row.selectFirst("div.team1").text()));
+	        Long awayTeamId =  Long.valueOf(convTeam(row.selectFirst("div.team2").text()));
+
+	        if (baseballGameService.findByGameDateAndTeamId(gameDate, homeTeamId, awayTeamId).isEmpty()) {
+	            gameLinks.add("https://npb.jp" + linkTag.attr("href") + "box.html");
+	        }
+	    }
+	    return gameLinks;
+	}
+	
 	/**
 	 * 当日の試合を除外
 	 * @param gameLinks
@@ -644,6 +643,7 @@ public class NPBWebScraper {
 			}
 		}
 	}
+	
 	/**
 	 * DBの登録用にポジションをポジションCDに変更
 	 */
@@ -686,4 +686,37 @@ public class NPBWebScraper {
 		}
 		return throwingCd;
 	}
+	/**
+	 * DBの登録用にチームをチームIDに変更
+	 */
+	public int convTeam(String team) {
+		if (team.contains("西武") || team.contains("西　武")) {
+			return 9; // 埼玉西武ライオンズ
+		} else if (team.contains("ソフトバンク")) {
+			return 7; // 福岡ソフトバンクホークス
+		} else if (team.contains("日本ハム")) {
+			return 8; // 北海道日本ハムファイターズ
+		} else if (team.contains("ロッテ")) {
+			return 11; // 千葉ロッテマリーンズ
+		} else if (team.contains("オリックス")) {
+			return 10; // オリックス・バファローズ
+		} else if (team.contains("楽天")) {
+			return 12; // 東北楽天ゴールデンイーグルス
+		} else if (team.contains("中日")) {
+			return 6; // 中日ドラゴンズ
+		} else if (team.contains("ヤクルト")) {
+			return 1; // 東京ヤクルトスワローズ
+		} else if (team.contains("読売") || team.contains("巨人")) {
+			return 2; // 読売ジャイアンツ
+		} else if (team.contains("阪神")) {
+			return 4; // 阪神タイガース
+		} else if (team.contains("広島")) {
+			return 5; // 広島東洋カープ
+		} else if (team.contains("横浜") || team.contains("横　浜") || team.contains("DeNA")) {
+			return 3; // 横浜DeNAベイスターズ
+		} else {
+			return 0;
+		}
+	}
+	
 }

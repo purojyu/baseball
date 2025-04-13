@@ -22,6 +22,10 @@ public class BaseballGameService {
 		return baseballGameRepository.findByGameDate(gameDate);
 	}
 	
+	public List<BaseballGame>  findByGameDateAndTeamId(Date gameDate, Long homeTeamId, Long awayTeamId) {
+		return baseballGameRepository.findByGameDateAndTeamId(gameDate, homeTeamId, awayTeamId);
+	}
+	
     public BaseballGame saveBaseballGame(BaseballGame baseballGame) {
         return baseballGameRepository.save(baseballGame);
     }
