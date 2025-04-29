@@ -649,9 +649,9 @@ public class NPBWebScraper {
 	 */
 	public String convPosition(String position) {
 		switch (position) {
-		case "投　手":
+		case "投手":
 			return "1";
-		case "捕　手":
+		case "捕手":
 			return "2";
 		case "内野手":
 			return "3";
