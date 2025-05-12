@@ -1,17 +1,46 @@
+<!-- vue-project/public/index.html  ※Vue CLI のデフォルト EJS テンプレート -->
 <!DOCTYPE html>
-<html lang="">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
-    <title><%= htmlWebpackPlugin.options.title %></title>
-  </head>
-  <body>
-    <noscript>
-      <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
-    </noscript>
-    <div id="app"></div>
-    <!-- built files will be auto injected -->
-  </body>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <!-- モバイル対応 -->
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+  <!-- ★ タブと検索結果の青いタイトル -->
+  <title>プロ野球 投手VS野手 対戦成績検索 | Pitcher-vs-Batter</title>
+
+  <!-- ★ 検索結果の説明文（120 字以内）-->
+  <meta name="description"
+        content="プロ野球(NPB) 投手と打者の一打席ごとの対戦成績を、年度・チームなどで検索できる画面です。">
+
+  <!-- ★ OGP（SNS・Google サムネ）-->
+  <meta property="og:type"        content="website">
+  <meta property="og:url"         content="https://baseball-pitcher-vs-batter.com/">
+  <meta property="og:title"       content="プロ野球 投手VS野手 対戦成績検索 | Pitcher-vs-Batter">
+  <meta property="og:description" content="NPB 投手と打者の対戦データを一発検索！">
+  <meta property="og:image"       content="https://baseball-pitcher-vs-batter.com/img/ogp.png">
+  <meta property="og:site_name"   content="Pitcher-vs-Batter">
+
+  <!-- Twitter Card（任意）-->
+  <meta name="twitter:card"  content="summary_large_image">
+  <meta name="twitter:image" content="https://baseball-pitcher-vs-batter.com/img/ogp.png">
+
+  <!-- ファビコン -->
+  <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+  <!-- iOS / Android ホーム画面用 -->
+  <link rel="apple-touch-icon" href="<%= BASE_URL %>apple-touch-icon.png">
+
+  <!-- ★ canonical を明示（URL を 1 本化）-->
+  <link rel="canonical" href="https://baseball-pitcher-vs-batter.com/">
+</head>
+
+<body>
+  <noscript>
+    <strong>このアプリは JavaScript が必須です。ブラウザ設定で有効化してください。</strong>
+  </noscript>
+  <div id="app"></div>
+  <!-- built files will be auto injected -->
+</body>
 </html>
