@@ -11,7 +11,7 @@ Vue.use(IconsPlugin);
 
 // Axios のインスタンスを作成
 const axiosInstance = axios.create({
-  baseURL: process.env.VUE_APP_BASE_URL,
+  baseURL: process.env.VUE_APP_BASE_URL || '/api',
 });
 
 // Axios インスタンスを Vue のプロトタイプに設定
