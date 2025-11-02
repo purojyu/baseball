@@ -1,4 +1,4 @@
-package com.example.scraper;
+package com.example.scraper.bk;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;

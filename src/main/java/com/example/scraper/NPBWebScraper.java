@@ -294,7 +294,7 @@ public class NPBWebScraper {
 				PitcherResults pitcherResults = new PitcherResults();
 				String playerUrl = cells.get(1).select("a").attr("href");
 				String fullPlayerUrl = "https://npb.jp" + playerUrl;
-				Long playerId = getPlayerName(fullPlayerUrl);
+				Long playerId = getPlayerIdByNpbId(fullPlayerUrl);
 				String pitchingResults = cells.get(3).text().trim();
 				pitcherResults.setPitcherId(playerId);
 				pitcherResults.setTeam(team);
@@ -362,7 +362,7 @@ public class NPBWebScraper {
 			if (cells.size() != 0) {
 				String playerUrl = cells.get(2).select("a").attr("href");
 				String fullPlayerUrl = "https://npb.jp" + playerUrl;
-				Long playerId = getPlayerName(fullPlayerUrl);
+				Long playerId = getPlayerIdByNpbId(fullPlayerUrl);
 				String batterResult = cells.get(i).text().trim();
 				if (!batterResult.equals("-")) {
 					BatterResults batterResults = new BatterResults();
@@ -380,19 +380,52 @@ public class NPBWebScraper {
 		return previousRow;
 	}
 
-	public Long getPlayerName(String url) {
+	/**
+	 * URLからNPB_IDを抽出
+	 * @param url NPBの選手ページURL
+	 * @return NPB_ID
+	 */
+	private Long extractNpbIdFromUrl(String url) {
+		try {
+			// URLから数値部分を抽出 (例: https://npb.jp/bis/players/81785133.html -> 81785133)
+			Pattern pattern = Pattern.compile("/players/(\\d+)\\.html");
+			Matcher matcher = pattern.matcher(url);
+			if (matcher.find()) {
+				return Long.valueOf(matcher.group(1));
+			}
+		} catch (NumberFormatException e) {
+			System.err.println("NPB_ID抽出エラー: " + url);
+		}
+		return null;
+	}
+
+	/**
+	 * NPB_IDベースで選手を特定し、存在しない場合は新規登録
+	 * @param url NPBの選手ページURL
+	 * @return 選手のplayerId
+	 */
+	public Long getPlayerIdByNpbId(String url) {
 		Long playerId = null;
 		try {
-			// プレイヤーの詳細ページにアクセス
-			Document playerDoc = Jsoup.connect(url).get();
-			// liタグのid="pc_v_name"を取得
-			Element playerNameElement = playerDoc.selectFirst("#pc_v_name li#pc_v_name");
-			String playerFullName = playerNameElement.text().trim();
-			Elements playerInfo = playerDoc.select("#pc_bio");
-			String birthdDateStr = playerInfo.select("th:contains(生年月日) + td").text();
-			LocalDate birthDate = convertToLocalDate(birthdDateStr);
-			BaseballPlayer baseballPlayer = baseballPlayerService.findByPlayerNmAndBirthDate(playerFullName, birthDate);
-			if(baseballPlayer == null) {
+			// URLからNPB_IDを抽出
+			Long npbId = extractNpbIdFromUrl(url);
+			if (npbId == null) {
+				System.err.println("NPB_ID抽出失敗: " + url);
+				return null;
+			}
+			
+			// NPB_IDで既存選手を検索
+			BaseballPlayer baseballPlayer = baseballPlayerService.findByNpbId(npbId);
+			
+			if (baseballPlayer == null) {
+				// 新規選手として登録
+				Document playerDoc = Jsoup.connect(url).get();
+				Element playerNameElement = playerDoc.selectFirst("#pc_v_name li#pc_v_name");
+				String playerFullName = playerNameElement.text().trim();
+				Elements playerInfo = playerDoc.select("#pc_bio");
+				String birthdDateStr = playerInfo.select("th:contains(生年月日) + td").text();
+				LocalDate birthDate = convertToLocalDate(birthdDateStr);
+				
 				BaseballPlayer insBaseballPlayer = new BaseballPlayer();
 				Element playerNameKanaElement = playerDoc.selectFirst("#pc_v_name li#pc_v_kana");
 				Elements positionElement = playerInfo.select("th:contains(ポジション) + td");
@@ -419,9 +452,10 @@ public class NPBWebScraper {
 				insBaseballPlayer.setHanded(handed);
 				insBaseballPlayer.setNpbUrl(url);
 				insBaseballPlayer.setPlayerNmKana(playerNameKanaElement.text());
+				insBaseballPlayer.setNpbId(npbId); // NPB_IDを設定
 				playerId = baseballPlayerService.savePlayer(insBaseballPlayer).getPlayerId();
-			}else {
-			playerId = baseballPlayer.getPlayerId();
+			} else {
+				playerId = baseballPlayer.getPlayerId();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -451,7 +485,7 @@ public class NPBWebScraper {
 			if (cells.size() != 0) {
 				String playerUrl = cells.get(2).select("a").attr("href");
 				String fullPlayerUrl = "https://npb.jp" + playerUrl;
-				Long playerId = getPlayerName(fullPlayerUrl);
+				Long playerId = getPlayerIdByNpbId(fullPlayerUrl);
 				String batterResult = cells.get(i).text().trim();
 				if (!batterResult.equals("-")) {
 					BatterResults batterResults = new BatterResults();
@@ -470,7 +504,7 @@ public class NPBWebScraper {
 			if (cells.size() != 0) {
 				String playerUrl = cells.get(2).select("a").attr("href");
 				String fullPlayerUrl = "https://npb.jp" + playerUrl;
-				Long playerId = getPlayerName(fullPlayerUrl);
+				Long playerId = getPlayerIdByNpbId(fullPlayerUrl);
 				String batterResult = cells.get(i).text().trim();
 				if (!batterResult.equals("-")) {
 					BatterResults batterResults = new BatterResults();

@@ -18,6 +18,8 @@ public interface AtBatResultRepository extends JpaRepository<AtBatResult, Long> 
     // JPQLクエリを使用してバッターIDとピッチャーIDで検索
     @Query("SELECT abr.result FROM AtBatResult abr WHERE abr.pitcherId = :pitcherId AND abr.batterId = :batterId")
     List<String> findByBatterIdAndPitcherId(@Param("pitcherId") Long pitcherId, @Param("batterId") Long batterId);
-
-
+    
+    // gameIdで検索
+    @Query("SELECT abr FROM AtBatResult abr WHERE abr.gameId = :gameId ORDER BY abr.atBatId")
+    	List<AtBatResult> findByGameId(@Param("gameId") Long gameId);
 }

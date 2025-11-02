@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -50,4 +51,12 @@ public class BaseballPlayer {
 
     @Column(name = "PLAYER_NM_KANA")
     private String playerNmKana;
+    
+    /** Yahoo 側の選手 ID（https://baseball.yahoo.co.jp/npb/player/{YAHOO_ID}/top） */
+    @Column(name = "YAHOO_ID", unique = true)
+    private Long yahooId;
+    
+    /** NPB 側の選手 ID（https://npb.jp/bis/players/{NPB_ID}.html） */
+    @Column(name = "NPB_ID", unique = true)
+    private Long npbId;
 }

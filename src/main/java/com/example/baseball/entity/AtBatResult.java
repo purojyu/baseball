@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,23 +15,23 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "AT_BAT_RESULT") // テーブル名を大文字で指定
+@Table(name = "AT_BAT_RESULT")
 public class AtBatResult {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "AT_BAT_ID") // カラム名を大文字で指定
+    @Column(name = "AT_BAT_ID")
     private Long atBatId;
     
-    @Column(name = "GAME_ID") // カラム名を大文字で指定
+    @Column(name = "GAME_ID") 
     private Long gameId;
     
-    @Column(name = "BATTER_ID") // カラム名を大文字で指定
+    @Column(name = "BATTER_ID") 
     private Long batterId;
     
-    @Column(name = "PITCHER_ID") // カラム名を大文字で指定
+    @Column(name = "PITCHER_ID") 
     private Long pitcherId;
     
-    @Column(name = "RESULT") // カラム名を大文字で指定
+    @Column(name = "RESULT") 
     private String result;
 }

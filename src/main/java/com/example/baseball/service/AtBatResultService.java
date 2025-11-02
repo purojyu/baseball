@@ -13,9 +13,15 @@ public class AtBatResultService {
 	@Autowired
 	AtBatResultRepository atBatResultRepository;
 	
+    public AtBatResult findById(Long atBatId) {
+        return atBatResultRepository.findById(atBatId).orElse(null);
+    }
 	public List<String> findMatchResult(Long pitcherId, Long batterId) {
 		return atBatResultRepository.findByBatterIdAndPitcherId(pitcherId, batterId);
 	}
+    public List<AtBatResult> findByGameId(Long gameId) {
+        return atBatResultRepository.findByGameId(gameId);
+    }
     public List<AtBatResult> saveAtBatResult(List<AtBatResult> atBatResult) {
         return atBatResultRepository.saveAll(atBatResult);
     }

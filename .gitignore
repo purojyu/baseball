@@ -41,3 +41,14 @@ out/
 .env.*
 # 機密情報を含むファイルを無視
 application-dev.properties
+
+# ログファイル
+logs/
+*.log
+
+# macOSシステムファイル
+.DS_Store
+**/.DS_Store
+
+# JVMクラッシュログ
+hs_err_pid*.log
