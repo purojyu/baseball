@@ -2,11 +2,11 @@ package com.example.baseball.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.example.scraper.NPBWebScraper;
 
-@RestController
+//動かす時だけコメントアウトを外す
+//@RestController
 @RequestMapping("/batch")
 public class ScrapeBatchController {
 

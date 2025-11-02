@@ -6,7 +6,11 @@
         <label class="header_font text-right pitcher-label">投手</label>
       </b-col>
       <b-col cols="4" class="text-center">
-        <span class="vs-label">VS</span>
+        <a href="https://x.com/JANYS992112" target="_blank" rel="noopener noreferrer" class="x-link">
+          <svg class="x-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+          </svg>
+        </a>
       </b-col>
       <b-col cols="4">
         <label class="header_font text-left batter-label">野手</label>
@@ -18,13 +22,9 @@
       <p>検索仕様</p>
       <div class="text-left small-text">
         <ul>
-          <li>特定の投手と特定の野手の対戦成績を検索する画面です。</li>
+          <li>プロ野球（NPB）の特定の投手と特定の野手の対戦成績を検索する画面です。</li>
           <li>投手名か野手名のどちらか一方は必ず選択して検索ボタンを押下してください。</li>
-          <li>投手名か野手名のどちらか一方の検索の場合、選択した選手と選択したチームの全ての対戦結果を表示します。</li>
           <li>通算の検索は、2016年以降の結果が表示されます。</li>
-          <li>プルダウンの選択は、文字入力で絞り込み可能です。</li>
-          <li>移籍歴のある選手で、特定のチームを選択した場合、選手が選択されたチームに所属していた期間の結果が表示されます。</li>
-          <li>移籍歴のある選手で、全てのチームを選択した場合、選手が複数の球団に所属していた全期間の結果が表示されます。</li>
         </ul>
       </div>
     </div>
@@ -266,4 +266,31 @@ export default {
 </script>
 
 <style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
-<style></style>
+<style scoped>
+.x-link {
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.x-link:hover {
+  transform: scale(1.1);
+}
+
+.x-icon {
+  width: 40px;
+  height: 40px;
+  fill: #000000;
+  transition: fill 0.2s ease;
+}
+
+.x-link:hover .x-icon {
+  fill: #1DA1F2;
+}
+
+@media (max-width: 575px) {
+  .x-icon {
+    width: 32px;
+    height: 32px;
+  }
+}
+</style>

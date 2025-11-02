@@ -41,6 +41,7 @@ import com.example.scraper.entity.PitcherResults;
 /**
  * NPBのサイトから試合結果、打席情報を取得
  */
+
 @Component
 public class NPBWebScraper {
 	
