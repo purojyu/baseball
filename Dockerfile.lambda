@@ -1,0 +1,29 @@
+# ===== Build Stage =====
+ARG JAVA_VERSION
+FROM eclipse-temurin:${JAVA_VERSION}-jdk AS builder
+
+WORKDIR /app
+
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle settings.gradle ./
+
+RUN chmod +x gradlew && ./gradlew dependencies --no-daemon || true
+
+COPY src src
+RUN ./gradlew bootJar --no-daemon
+
+# ===== Lambda Runtime Stage =====
+ARG JAVA_VERSION
+FROM amazoncorretto:${JAVA_VERSION}-alpine
+
+WORKDIR /app
+
+# Lambda Web Adapter をインストール
+COPY --from=public.ecr.aws/awsguru/aws-lambda-web-adapter:0.8.4 /lambda-adapter /opt/extensions/lambda-adapter
+
+COPY --from=builder /app/build/libs/*.jar app.jar
+
+ENV PORT=8080
+
+CMD ["java", "-jar", "app.jar", "--spring.profiles.active=prod"]
