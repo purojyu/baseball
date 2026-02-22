@@ -9,19 +9,18 @@ module.exports = defineConfig({
     config.resolve.alias.set("vue$", path.resolve(__dirname, "node_modules/vue/dist/vue.esm.js"));
   },
 
-  // ビルド成果物の出力先をSpring Bootのstaticフォルダに設定
-  outputDir: path.resolve(__dirname, "../src/main/resources/static"),
+  // ビルド成果物の出力先（S3デプロイ用）
+  outputDir: "dist",
 
   // プロダクションビルドの設定
-  publicPath: process.env.NODE_ENV === "production" ? "/" : "/",
+  publicPath: "/",
 
   // 開発サーバー設定（開発環境のみ）
   devServer: {
     proxy: {
-      "/api": {
+      "/baseball/api": {
         target: "http://localhost:8080",
         changeOrigin: true,
-        pathRewrite: { "^/api": "" },
       },
     },
   },
