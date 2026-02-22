@@ -24,6 +24,6 @@ public interface BaseballGameRepository extends JpaRepository<BaseballGame, Long
 	List<BaseballGame> findByGameDateAndTeamId(@Param("gameDate") Date gameDate, @Param("homeTeamId") Long homeTeamId, @Param("awayTeamId") Long awayTeamId);
 	
 	// 存在する年度のリストを取得
-	@Query(value = "SELECT DISTINCT YEAR(GAME_DATE) AS YEAR FROM BASEBALL_GAME ORDER BY YEAR DESC", nativeQuery = true)
+	@Query(value = "SELECT DISTINCT CAST(EXTRACT(YEAR FROM GAME_DATE) AS INTEGER) AS YEAR FROM BASEBALL_GAME ORDER BY YEAR DESC", nativeQuery = true)
 	List<String> findDistinctYears();
 }

@@ -31,7 +31,7 @@ public interface BaseballPlayerHistoryRepository extends JpaRepository<BaseballP
         value = "SELECT * FROM BASEBALL_PLAYER_HISTORY bph " +
                 "WHERE bph.PLAYER_ID = :playerId " +
                 "AND bph.TEAM_ID = :teamId " +
-                "AND YEAR(bph.START_DATE) = :year",
+                "AND CAST(EXTRACT(YEAR FROM bph.START_DATE) AS INTEGER) = CAST(:year AS INTEGER)",
         nativeQuery = true
     )
     BaseballPlayerHistory findByPlayerIdAndTeamIdAndStartDateYear(
@@ -53,7 +53,7 @@ public interface BaseballPlayerHistoryRepository extends JpaRepository<BaseballP
         value = "SELECT * FROM BASEBALL_PLAYER_HISTORY bph " +
                 "WHERE bph.PLAYER_ID = :playerId " +
                 "AND bph.TEAM_ID = :teamId " +
-                "AND YEAR(bph.END_DATE) = :year",
+                "AND CAST(EXTRACT(YEAR FROM bph.END_DATE) AS INTEGER) = CAST(:year AS INTEGER)",
         nativeQuery = true
     )
     BaseballPlayerHistory findByPlayerIdAndTeamIdAndEndDateYear(

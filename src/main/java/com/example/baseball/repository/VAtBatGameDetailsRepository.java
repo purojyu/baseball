@@ -29,8 +29,8 @@ public interface VAtBatGameDetailsRepository extends JpaRepository<VAtBatGameDet
 		       "AND (:pitcherId IS NULL OR vag.PITCHER_ID = :pitcherId) " +
 		       "AND (" +
 		       "    :selectedYear = '通算' OR (" +
-		       "        vag.GAME_DATE BETWEEN STR_TO_DATE(CONCAT(:selectedYear, '-01-01'), '%Y-%m-%d') " +
-		       "        AND STR_TO_DATE(CONCAT(:selectedYear, '-12-31'), '%Y-%m-%d')" +
+		       "        vag.GAME_DATE BETWEEN TO_DATE(CONCAT(:selectedYear, '-01-01'), 'YYYY-MM-DD') " +
+		       "        AND TO_DATE(CONCAT(:selectedYear, '-12-31'), 'YYYY-MM-DD')" +
 		       "    )" +
 		       ")", nativeQuery = true)
 		List<VAtBatGameDetails> findByBatterAndPitcher(
