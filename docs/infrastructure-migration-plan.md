@@ -23,9 +23,10 @@
 
 ### 新規作成ファイル
 
-**`Dockerfile`**（ローカル開発 & Lambda ベース）
-- マルチステージビルド（eclipse-temurin:17-jdk → 17-jre）
-- `./gradlew bootJar` でビルド → `app.jar` として配置
+**`Dockerfile`**（ローカル開発用）
+- eclipse-temurin:17-jdk ベースのシンプルなイメージ
+- ソースコードは docker-compose.yml のボリュームマウントで提供
+- `./gradlew bootRun` で直接起動（ホットリロード対応）
 - EXPOSE 8080
 
 **`Dockerfile.lambda`**（Lambda Web Adapter 用）

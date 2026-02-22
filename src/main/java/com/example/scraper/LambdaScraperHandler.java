@@ -1,6 +1,5 @@
 package com.example.scraper;
 
-import java.time.LocalDate;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -36,19 +35,17 @@ public class LambdaScraperHandler implements RequestHandler<Map<String, Object>,
 
         try (ConfigurableApplicationContext ctx = app.run()) {
             NPBWebScraper npbScraper = ctx.getBean(NPBWebScraper.class);
-            YahooPitchScraper yahooScraper = ctx.getBean(YahooPitchScraper.class);
 
             // NPBスクレイピング実行
             log.info("NPBスクレイピング開始");
             npbScraper.scrapeData();
             log.info("NPBスクレイピング完了");
 
-            // Yahoo投球データスクレイピング実行
-            LocalDate from = LocalDate.now().minusDays(7);
-            LocalDate to = LocalDate.now().minusDays(1);
-            log.info("Yahoo投球データスクレイピング開始: {} → {}", from, to);
-            yahooScraper.scrapeRange(from, to);
-            log.info("Yahoo投球データスクレイピング完了");
+            // Yahoo投球データスクレイピングは現在未使用
+            // ※ scrapeRangeは7日分処理でスリープが長く、Lambda 15分制限を超えるため
+            // LocalDate from = LocalDate.now().minusDays(7);
+            // LocalDate to = LocalDate.now().minusDays(1);
+            // yahooScraper.scrapeRange(from, to);
 
             return "Scraping completed successfully";
         } catch (Exception e) {

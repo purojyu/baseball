@@ -4,7 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'src/**/scraper/**'
+      - 'src/**'
+      - 'build.gradle'
       - 'Dockerfile.scraper'
       - 'docker.env'
 
@@ -21,7 +22,7 @@ jobs:
 
       - name: Load build config
         run: |
-          source docker.env
+          . ./docker.env
           echo "JAVA_VERSION=$JAVA_VERSION" >> $GITHUB_ENV
 
       - name: Configure AWS credentials

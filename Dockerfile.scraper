@@ -21,4 +21,4 @@ WORKDIR /app
 
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-ENTRYPOINT ["java", "-cp", "app.jar", "-Dloader.main=com.example.scraper.LambdaScraperHandler", "org.springframework.boot.loader.launch.PropertiesLauncher"]
+ENTRYPOINT ["java", "-Dloader.main=com.example.scraper.LambdaScraperHandler", "-jar", "app.jar"]

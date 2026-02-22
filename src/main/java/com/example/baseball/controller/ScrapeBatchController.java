@@ -2,12 +2,12 @@ package com.example.baseball.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.example.scraper.NPBWebScraper;
 
-//動かす時だけコメントアウトを外す
-@RestController
+// Lambda移行後はEventBridge経由で実行するため、このエンドポイントは無効化
+// 手動実行が必要な場合のみコメントアウトを外す（認証なしで公開されるので注意）
+//@RestController
 @RequestMapping("/batch")
 public class ScrapeBatchController {
 

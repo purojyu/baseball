@@ -22,7 +22,7 @@ jobs:
       - name: Load build config
         working-directory: .
         run: |
-          source docker.env
+          . ./docker.env
           echo "NODE_VERSION=$NODE_VERSION" >> $GITHUB_ENV
 
       - name: Setup Node.js
