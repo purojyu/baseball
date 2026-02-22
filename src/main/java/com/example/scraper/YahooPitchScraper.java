@@ -80,12 +80,13 @@ public class YahooPitchScraper {
     };
 
     // Sleep intervals (milliseconds)
-    private static final int MIN_REQUEST_INTERVAL = 5000;
-    private static final int MAX_REQUEST_INTERVAL = 8000;
+    private static final int MIN_REQUEST_INTERVAL = 30000;
+    private static final int MAX_REQUEST_INTERVAL = 30000;
     private static final int MIN_GAME_INTERVAL = 15000;
     private static final int MAX_GAME_INTERVAL = 25000;
     private static final int MIN_DAY_INTERVAL = 10000;
     private static final int MAX_DAY_INTERVAL = 15000;
+    private static final int DAILY_SLEEP_WITH_GAMES = 600000; // 10分（試合がある日のみ）
     private static final int MIN_PLAYER_INTERVAL = 2000;
     private static final int MAX_PLAYER_INTERVAL = 4000;
     private static final int ERROR_SLEEP_MIN = 30000;
@@ -141,19 +142,41 @@ public class YahooPitchScraper {
         }
         log.info("スクレイピング開始: {} から {} まで", from, to);
 
+        boolean isFirstDay = true;
         for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) {
             try {
                 log.info("処理中: {}", d);
-                if (!fetchScheduleForKind(d, LEAGUE_GAMES)) { // リーグ戦
-                    fetchScheduleForKind(d, INTERLEAGUE_GAMES);    // 交流戦
+                boolean hasGames = false;
+
+                // リーグ戦をチェック
+                if (fetchScheduleForKind(d, LEAGUE_GAMES)) {
+                    hasGames = true;
+                } else {
+                    // 交流戦をチェック
+                    if (fetchScheduleForKind(d, INTERLEAGUE_GAMES)) {
+                        hasGames = true;
+                    }
                 }
 
-                safeSleep(MIN_DAY_INTERVAL, MAX_DAY_INTERVAL);
-                
+                // 試合がある日だけ長時間待機（レート制限対策）
+                // ただし、最初の日は待機しない
+                if (hasGames) {
+                    if (isFirstDay) {
+                        log.info("試合あり（初日のため待機なし）");
+                        isFirstDay = false;
+                    } else {
+                        log.info("試合あり。レート制限対策のため10分待機します...");
+                        safeSleep(DAILY_SLEEP_WITH_GAMES, DAILY_SLEEP_WITH_GAMES);
+                    }
+                } else {
+                    log.info("試合なし。短時間待機");
+                    safeSleep(MIN_DAY_INTERVAL, MAX_DAY_INTERVAL);
+                    isFirstDay = false; // 試合がなくても次回からは通常処理
+                }
+
             } catch (Exception e) {
                 log.error("scrapeRange → {} の処理で致命的エラー", d, e);
-                // エラー時は更に長時間待機
-                safeSleep(ERROR_SLEEP_MIN, ERROR_SLEEP_MAX);
+                throw new RuntimeException("スクレイピング処理を中断します", e);
             }
         }
         
@@ -184,10 +207,10 @@ public class YahooPitchScraper {
                 if (!stateTxt.contains("試合終了")) continue;
 
                 gameCount++;
-                
-                
+
+                // 試合をスクレイピング
                 scrapeGame(gameId);
-                
+
                 safeSleep(MIN_GAME_INTERVAL, MAX_GAME_INTERVAL);
             }
             log.info("{}日の試合取り込みが終了しました", date);
@@ -224,6 +247,8 @@ public class YahooPitchScraper {
 
         String index = fetchStartIndex(gameId);   // 基本は「0110100」始まり
         
+        log.info("index："+ index);
+        
         List<PitchResult> prList = new ArrayList<>();
         AtBatResult currentAB = null;
         int pitchCount = 0;
@@ -235,6 +260,7 @@ public class YahooPitchScraper {
 
             try {
                 /* ---- 打席ページ取得 ---- */
+                safeSleep(MIN_REQUEST_INTERVAL, MAX_REQUEST_INTERVAL);
                 Document doc = connectSafely(String.format(SCORE_URL, gameId, index));
 
                 long pitId = extractPlayerId(doc, true);
@@ -330,8 +356,7 @@ public class YahooPitchScraper {
 
             } catch (Exception ex) {
                 log.error("scrapeGame error: gameId={}, index={}, pitchCount={}", gameId, index, pitchCount, ex);
-                safeSleep(ERROR_SLEEP_MIN, ERROR_SLEEP_MAX);
-                break;              // 異常終了
+                throw ex;  // 上位のscrapeGameWithRetryでリトライさせる
             }
             Document tmp = connectSafely(String.format(SCORE_URL, gameId, index));
             index = getNextIndex(tmp);
@@ -339,22 +364,59 @@ public class YahooPitchScraper {
         
         if (!prList.isEmpty()) pitchResultService.saveAll(prList);
 
+        // 敬遠四球を除外（Yahoo!に投球データが存在しないため）
+        List<AtBatResult> intentionalWalks = new ArrayList<>();
+        atBats.removeIf(ab -> {
+            if (ab.getResult() != null && ab.getResult().contains("敬遠")) {
+                intentionalWalks.add(ab);
+                return true;
+            }
+            return false;
+        });
+
+        if (!intentionalWalks.isEmpty()) {
+            log.info("敬遠四球をスキップ: {} 件（Yahoo!に投球詳細データが存在しないため）", intentionalWalks.size());
+        }
+
         if (!atBats.isEmpty()) {
-            log.info("gameId={} : 未処理 atBat={} 件", gameId, atBats.size());
-            // 未処理打席の詳細情報をログ出力（デバッグ用）
-            atBats.forEach(ab -> {
+            log.error("⚠️⚠️⚠️ gameId={} : 本当の未処理 atBat={} 件（敬遠四球を除く）", gameId, atBats.size());
+            log.error("未処理打席の詳細情報:");
+
+            // 未処理打席の詳細情報をログ出力
+            int count = 1;
+            for (AtBatResult ab : atBats) {
                 try {
                     BaseballPlayer batter = baseballPlayerService.findById(ab.getBatterId());
                     BaseballPlayer pitcher = baseballPlayerService.findById(ab.getPitcherId());
-                    log.debug("未処理打席: atBatId={}, batter={}, pitcher={}",
-                            ab.getAtBatId(),
-                            batter != null ? batter.getPlayerNm() : "Unknown(" + ab.getBatterId() + ")",
-                            pitcher != null ? pitcher.getPlayerNm() : "Unknown(" + ab.getPitcherId() + ")");
+
+                    String batterInfo = batter != null ?
+                        String.format("%s(ID=%d)", batter.getPlayerNm(), batter.getPlayerId()) :
+                        "Unknown(ID=" + ab.getBatterId() + ")";
+                    String pitcherInfo = pitcher != null ?
+                        String.format("%s(ID=%d)", pitcher.getPlayerNm(), pitcher.getPlayerId()) :
+                        "Unknown(ID=" + ab.getPitcherId() + ")";
+
+                    // Yahoo IDの有無もチェック
+                    String batterYahooInfo = (batter != null && batter.getYahooId() != null) ?
+                        "YahooID=" + batter.getYahooId() : "YahooID未登録";
+                    String pitcherYahooInfo = (pitcher != null && pitcher.getYahooId() != null) ?
+                        "YahooID=" + pitcher.getYahooId() : "YahooID未登録";
+
+                    log.error("  未処理{}:  atBatId={}, 結果={}, 打者={}[{}], 投手={}[{}]",
+                            count, ab.getAtBatId(), ab.getResult(),
+                            batterInfo, batterYahooInfo,
+                            pitcherInfo, pitcherYahooInfo);
                 } catch (Exception e) {
-                    log.debug("未処理打席: atBatId={}, batterId={}, pitcherId={}",
-                            ab.getAtBatId(), ab.getBatterId(), ab.getPitcherId());
+                    log.error("  未処理{}: atBatId={}, batterId={}, pitcherId={} (選手情報取得エラー: {})",
+                            count, ab.getAtBatId(), ab.getBatterId(), ab.getPitcherId(), e.getMessage());
                 }
-            });
+                count++;
+            }
+
+            log.error("推測される未処理の理由:");
+            log.error("  1. Yahoo!に投球詳細データが存在しない（代打交代等）");
+            log.error("  2. 選手のYahoo IDが未登録でマッチングに失敗");
+            log.error("  3. Yahoo!とNPBのデータに不一致がある");
         }
     }
 
@@ -612,9 +674,48 @@ public class YahooPitchScraper {
 
     private String fetchStartIndex(String gameId) throws IOException {
         String url = YAHOO_BASE_URL + "/npb/game/" + gameId + "/score";
+        log.info("fetchStartIndex: URL={}", url);
+
         Document doc = connectSafely(url);
+        log.info("fetchStartIndex: Document取得成功");
+
+        // 方法1: 新しいHTML構造に対応（bb-gameScoreTable__scoreクラスから取得）
+        Elements scoreLinks = doc.select("a.bb-gameScoreTable__score[href*=index]");
+        if (!scoreLinks.isEmpty()) {
+            Element firstLink = scoreLinks.first();
+            String href = firstLink.attr("href");
+            // href="/npb/game/2021029040/score?index=0110100" から index を抽出
+            Pattern indexPattern = Pattern.compile("index=(\\d+)");
+            Matcher matcher = indexPattern.matcher(href);
+            if (matcher.find()) {
+                String index = matcher.group(1);
+                log.info("fetchStartIndex: 成功（新方式） - index={}", index);
+                return index;
+            }
+        }
+
+        // 方法2: 古いHTML構造（フォールバック）
         Element a = doc.selectFirst("a#inn_score[index]");
-        return a != null ? a.attr("index") : null;
+        if (a != null) {
+            String index = a.attr("index");
+            log.info("fetchStartIndex: 成功（旧方式） - index={}", index);
+            return index;
+        }
+
+        // どちらの方法でも取得できなかった場合
+        log.warn("fetchStartIndex: index取得失敗");
+        log.warn("デバッグ: bb-gameScoreTable__scoreリンク数={}", scoreLinks.size());
+
+        // デバッグ: index属性を持つ要素を探す
+        Elements indexElements = doc.select("[index]");
+        log.warn("デバッグ: [index]属性を持つ要素数={}", indexElements.size());
+        for (int i = 0; i < Math.min(indexElements.size(), 3); i++) {
+            Element elem = indexElements.get(i);
+            log.warn("  要素{}: tag={}, id={}, class={}, index={}",
+                    i + 1, elem.tagName(), elem.id(), elem.className(), elem.attr("index"));
+        }
+
+        return null;
     }
     
     /**

@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -17,12 +18,10 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
-				// HTTPSリダイレクトを強制(ローカルではコメントアウト)
-//				.requiresChannel(channel -> channel.anyRequest().requiresSecure())
-				// CSRF保護を無効化（必要に応じて調整）
+				// CSRF保護を無効化（API用）
 				.csrf(csrf -> csrf.disable())
-				// CORS設定を適用()(ローカルではコメントアウト)
-//				.cors(Customizer.withDefaults())
+				// CORS設定を適用
+				.cors(Customizer.withDefaults())
 				// 認証なしで全てのリクエストを許可
 				.authorizeHttpRequests(auth -> auth
 						.anyRequest().permitAll());
@@ -35,8 +34,10 @@ public class SecurityConfig {
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		// 許可するオリジン（末尾にスラッシュは不要）
-		configuration.setAllowedOrigins(Arrays.asList("https://baseball-pitcher-vs-batter.com",
-				"https://www.baseball-pitcher-vs-batter.com"));
+		configuration.setAllowedOrigins(Arrays.asList(
+				"https://baseball-pitcher-vs-batter.com",
+				"https://www.baseball-pitcher-vs-batter.com",
+				"http://localhost:8081"));
 		// 許可するHTTPメソッド
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 		// 許可するヘッダー

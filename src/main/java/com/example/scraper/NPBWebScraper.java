@@ -8,7 +8,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -61,43 +60,35 @@ public class NPBWebScraper {
 	@Autowired
 	private BaseballPlayerHistoryService baseballPlayerHistoryService; 
 
-	private static final List<String> years = Arrays.asList(
-//			"2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024","2025");
-			"2025");
-
-	private static final List<String> months = Arrays.asList(
-						"03", "04", "05", "06", "07", "08", "09", "10", "11");
-
 	/**
-	 * 打席結果を取得
+	 * 打席結果を取得（前日の試合のみ）
+	 * Lambda実行時間制限（15分）対応のため、前日分のみ取り込む。
+	 * Lambda実行時刻: 毎日 00:00 UTC（= 09:00 JST）
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	// 秒   分   時   日   月   曜日  herokuのapiで定期実行するのでコメントアウト
-//	@Scheduled(cron = "0 0 9 * * ?", zone = "Asia/Tokyo")
 	public void scrapeData() throws IOException, ParseException {
 		System.out.println("はじまり〜");
-		for (String year : years) {
-			for (String month : months) {
-				String url = "https://npb.jp/games/" + year + "/schedule_" + month + "_detail.html";
-				List<String> gameLinks = getGameLinks(url, year);
-				// 年と月でリンクが存在している場合
-				if (gameLinks != null) {
-					// 当日の試合を除外
-					filterOutSpecificDates(gameLinks);
-					for (String gameLink : gameLinks) {
-						// 試合結果を取得
-						BaseballGame baseballGame = getGameInfo(gameLink);
-						if (baseballGame != null) {
-							System.out.println(baseballGame.getGameDate()+"開始");
-							// 打席結果を取得
-							BatterPitcherInfoList batterPitcherInfo = parseGameDetails(gameLink);
-							if (batterPitcherInfo != null) {
-								convertPlayer(batterPitcherInfo, baseballGame);
-							}
-							System.out.println(baseballGame.getGameDate()+"終了");
-						}
+
+		LocalDate yesterday = LocalDate.now(ZoneId.of("Asia/Tokyo")).minusDays(1);
+		String year = String.valueOf(yesterday.getYear());
+		String month = String.format("%02d", yesterday.getMonthValue());
+		String yesterdayMMdd = String.format("%02d%02d", yesterday.getMonthValue(), yesterday.getDayOfMonth());
+
+		System.out.println("取込対象: " + yesterday);
+
+		String url = "https://npb.jp/games/" + year + "/schedule_" + month + "_detail.html";
+		List<String> gameLinks = getGameLinks(url, year, yesterdayMMdd);
+		if (gameLinks != null && !gameLinks.isEmpty()) {
+			for (String gameLink : gameLinks) {
+				BaseballGame baseballGame = getGameInfo(gameLink);
+				if (baseballGame != null) {
+					System.out.println(baseballGame.getGameDate() + "開始");
+					BatterPitcherInfoList batterPitcherInfo = parseGameDetails(gameLink);
+					if (batterPitcherInfo != null) {
+						convertPlayer(batterPitcherInfo, baseballGame);
 					}
+					System.out.println(baseballGame.getGameDate() + "終了");
 				}
 			}
 		}
@@ -111,7 +102,16 @@ public class NPBWebScraper {
 	 * @throws IOException
 	 * @throws ParseException 
 	 */
-	private List<String> getGameLinks(String url, String year) throws IOException, ParseException {
+	/**
+	 * 取得対象の試合のリンクを取得（指定日のみ）
+	 * @param url スケジュールページURL
+	 * @param year 対象年
+	 * @param targetMMdd 対象日（MMdd形式）
+	 * @return 試合リンクのリスト
+	 * @throws IOException
+	 * @throws ParseException
+	 */
+	private List<String> getGameLinks(String url, String year, String targetMMdd) throws IOException, ParseException {
 	    Document doc = Jsoup.connect(url).get();
 	    List<String> gameLinks = new ArrayList<>();
 
@@ -127,6 +127,10 @@ public class NPBWebScraper {
 	        // URL から年月日を抜き出し Date に変換
 	        Matcher m = Pattern.compile("/scores/(\\d{4})/(\\d{4})/").matcher(linkTag.attr("href"));
 	        if (!m.find()) continue;
+
+	        // 対象日以外はスキップ
+	        if (!m.group(2).equals(targetMMdd)) continue;
+
 	        String fullDate = m.group(1) + m.group(2);         // yyyyMMdd
 	        Date gameDate = new SimpleDateFormat("yyyyMMdd").parse(fullDate);
 
@@ -138,33 +142,6 @@ public class NPBWebScraper {
 	        }
 	    }
 	    return gameLinks;
-	}
-	
-	/**
-	 * 当日の試合を除外
-	 * @param gameLinks
-	 */
-	private void filterOutSpecificDates(List<String> gameLinks) {
-		LocalDate today = LocalDate.now();
-		DateTimeFormatter yearFormatter = DateTimeFormatter.ofPattern("yyyy");
-		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMdd");
-
-		String currentYear = today.format(yearFormatter);
-		String todayStr = today.format(dateFormatter);
-
-		gameLinks.removeIf(link -> {
-			// リンクから年と日付を取得
-			Pattern pattern = Pattern.compile("/scores/(\\d{4})/(\\d{4})/.*");
-			Matcher matcher = pattern.matcher(link);
-			if (matcher.find()) {
-				String linkYear = matcher.group(1);// yyyy形式
-				String linkDate = matcher.group(2).substring(0, 4); // MMdd形式
-
-				// 年と日付が一致する場合にスキップ
-				return linkYear.equals(currentYear) && linkDate.equals(todayStr);
-			}
-			return false;
-		});
 	}
 
 	/**
