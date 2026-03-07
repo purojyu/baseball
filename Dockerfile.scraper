@@ -1,6 +1,7 @@
 # ===== Build Stage =====
 ARG JAVA_VERSION
-FROM eclipse-temurin:${JAVA_VERSION}-jdk AS builder
+ARG BUILDPLATFORM
+FROM --platform=$BUILDPLATFORM eclipse-temurin:${JAVA_VERSION}-jdk AS builder
 
 WORKDIR /app
 
