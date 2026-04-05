@@ -53,6 +53,7 @@ jobs:
           docker buildx build -f Dockerfile.scraper \
             --platform linux/arm64 \
             --build-arg JAVA_VERSION=${{ env.JAVA_VERSION }} \
+            --provenance=false \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
             --push .
