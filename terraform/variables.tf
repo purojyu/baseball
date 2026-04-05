@@ -25,7 +25,7 @@ variable "api_lambda_memory" {
 variable "api_lambda_timeout" {
   description = "Timeout for API Lambda (seconds)"
   type        = number
-  default     = 30
+  default     = 60
 }
 
 variable "scraper_lambda_memory" {
