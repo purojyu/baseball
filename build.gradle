@@ -39,6 +39,8 @@ dependencies {
     // AWS Lambda
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.3'
     implementation 'com.amazonaws:aws-lambda-java-events:3.11.4'
+    // AWS Lambda Runtime Interface Client (for container-based Lambda)
+    implementation 'com.amazonaws:aws-lambda-java-runtime-interface-client:2.5.0'
     // AWS SDK v2 Secrets Manager
     implementation platform('software.amazon.awssdk:bom:2.25.60')
     implementation 'software.amazon.awssdk:secretsmanager'

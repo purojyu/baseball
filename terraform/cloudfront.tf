@@ -11,18 +11,15 @@ data "aws_cloudfront_cache_policy" "caching_disabled" {
   name = "Managed-CachingDisabled"
 }
 
-# Origin request policy for API (forward all except Host header)
+# Origin request policy for API (forward query strings only, exclude Host header)
 resource "aws_cloudfront_origin_request_policy" "api_forward_all" {
   name = "baseball-api-forward-all"
 
   cookies_config {
-    cookie_behavior = "all"
+    cookie_behavior = "none"
   }
   headers_config {
-    header_behavior = "allViewerAndWhitelistCloudFront"
-    headers {
-      items = ["CloudFront-Forwarded-Proto"]
-    }
+    header_behavior = "none"
   }
   query_strings_config {
     query_string_behavior = "all"

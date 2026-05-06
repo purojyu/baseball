@@ -8,6 +8,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -61,6 +62,33 @@ public class NPBWebScraper {
 	private BaseballPlayerHistoryService baseballPlayerHistoryService; 
 
 	/**
+	 * 指定年・月の全試合を一括取り込み（バッチ用）
+	 */
+	public void scrapeBatch(List<String> years, List<String> months) throws IOException, ParseException {
+		System.out.println("一括取り込み開始");
+		for (String year : years) {
+			for (String month : months) {
+				String url = "https://npb.jp/games/" + year + "/schedule_" + month + "_detail.html";
+				List<String> gameLinks = getAllGameLinks(url, year);
+				if (gameLinks != null) {
+					for (String gameLink : gameLinks) {
+						BaseballGame baseballGame = getGameInfo(gameLink);
+						if (baseballGame != null) {
+							System.out.println(baseballGame.getGameDate() + "開始");
+							BatterPitcherInfoList batterPitcherInfo = parseGameDetails(gameLink);
+							if (batterPitcherInfo != null) {
+								convertPlayer(batterPitcherInfo, baseballGame);
+							}
+							System.out.println(baseballGame.getGameDate() + "終了");
+						}
+					}
+				}
+			}
+		}
+		System.out.println("一括取り込み完了");
+	}
+
+	/**
 	 * 打席結果を取得（前日の試合のみ）
 	 * Lambda実行時間制限（15分）対応のため、前日分のみ取り込む。
 	 * Lambda実行時刻: 毎日 00:00 UTC（= 09:00 JST）
@@ -96,12 +124,38 @@ public class NPBWebScraper {
 	}
 
 	/**
-	 * 取得対象の試合のリンクを取得
-	 * @param month
-	 * @return
-	 * @throws IOException
-	 * @throws ParseException 
+	 * 全試合のリンクを取得（一括取り込み用、当日以降を除外）
 	 */
+	private List<String> getAllGameLinks(String url, String year) throws IOException, ParseException {
+		Document doc = Jsoup.connect(url).get();
+		List<String> gameLinks = new ArrayList<>();
+		LocalDate today = LocalDate.now(ZoneId.of("Asia/Tokyo"));
+
+		for (Element row : doc.select("tr[id^=date]")) {
+			if (row.selectFirst("div.cancel") != null) continue;
+			Element linkTag = row.selectFirst("a[href]");
+			if (linkTag == null) continue;
+
+			Matcher m = Pattern.compile("/scores/(\\d{4})/(\\d{4})/").matcher(linkTag.attr("href"));
+			if (!m.find()) continue;
+
+			String fullDate = m.group(1) + m.group(2);
+			Date gameDate = new SimpleDateFormat("yyyyMMdd").parse(fullDate);
+			LocalDate gameLocalDate = gameDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+			// 当日以降はスキップ
+			if (!gameLocalDate.isBefore(today)) continue;
+
+			Long homeTeamId = Long.valueOf(convTeam(row.selectFirst("div.team1").text()));
+			Long awayTeamId = Long.valueOf(convTeam(row.selectFirst("div.team2").text()));
+
+			if (baseballGameService.findByGameDateAndTeamId(gameDate, homeTeamId, awayTeamId).isEmpty()) {
+				gameLinks.add("https://npb.jp" + linkTag.attr("href") + "box.html");
+			}
+		}
+		return gameLinks;
+	}
+
 	/**
 	 * 取得対象の試合のリンクを取得（指定日のみ）
 	 * @param url スケジュールページURL

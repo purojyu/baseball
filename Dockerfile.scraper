@@ -14,12 +14,20 @@ RUN chmod +x gradlew && ./gradlew dependencies --no-daemon || true
 COPY src src
 RUN ./gradlew bootJar --no-daemon
 
+# bootJarを展開（Lambda RIC用）
+RUN cd /app/build/libs && \
+    JAR_FILE=$(ls *.jar | head -1) && \
+    mkdir -p /app/extracted && \
+    cd /app/extracted && \
+    jar xf /app/build/libs/$JAR_FILE
+
 # ===== Lambda Runtime Stage =====
-ARG JAVA_VERSION
-FROM amazoncorretto:${JAVA_VERSION}-alpine
+FROM public.ecr.aws/lambda/java:17
 
-WORKDIR /app
+# Spring Bootのネスト構造を展開してLambda Task Rootに配置
+COPY --from=builder /app/extracted/BOOT-INF/classes/ ${LAMBDA_TASK_ROOT}/
+COPY --from=builder /app/extracted/BOOT-INF/lib/ ${LAMBDA_TASK_ROOT}/lib/
+COPY --from=builder /app/extracted/META-INF/ ${LAMBDA_TASK_ROOT}/META-INF/
 
-COPY --from=builder /app/build/libs/*.jar app.jar
-
-ENTRYPOINT ["java", "-Dloader.main=com.example.scraper.LambdaScraperHandler", "-jar", "app.jar"]
+# Lambda Runtime ICがhandlerメソッドを呼び出す
+CMD ["com.example.scraper.LambdaScraperHandler::handleRequest"]

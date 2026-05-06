@@ -32,6 +32,8 @@ public class LambdaScraperHandler implements RequestHandler<Map<String, Object>,
         SpringApplication app = new SpringApplication(LambdaScraperHandler.class);
         app.setWebApplicationType(WebApplicationType.NONE);
         app.setAdditionalProfiles("prod");
+        // application.propertiesのデフォルトdevを上書きしてprodのみ有効化
+        System.setProperty("spring.profiles.active", "prod");
 
         try (ConfigurableApplicationContext ctx = app.run()) {
             NPBWebScraper npbScraper = ctx.getBean(NPBWebScraper.class);
