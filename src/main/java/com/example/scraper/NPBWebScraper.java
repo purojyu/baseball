@@ -66,26 +66,74 @@ public class NPBWebScraper {
 	 */
 	public void scrapeBatch(List<String> years, List<String> months) throws IOException, ParseException {
 		System.out.println("一括取り込み開始");
+		int successCount = 0;
+		int failCount = 0;
+		java.util.List<String> failedGames = new ArrayList<>();
 		for (String year : years) {
 			for (String month : months) {
 				String url = "https://npb.jp/games/" + year + "/schedule_" + month + "_detail.html";
 				List<String> gameLinks = getAllGameLinks(url, year);
 				if (gameLinks != null) {
 					for (String gameLink : gameLinks) {
-						BaseballGame baseballGame = getGameInfo(gameLink);
-						if (baseballGame != null) {
-							System.out.println(baseballGame.getGameDate() + "開始");
-							BatterPitcherInfoList batterPitcherInfo = parseGameDetails(gameLink);
-							if (batterPitcherInfo != null) {
-								convertPlayer(batterPitcherInfo, baseballGame);
+						try {
+							BaseballGame baseballGame = getGameInfo(gameLink);
+							if (baseballGame != null) {
+								System.out.println(baseballGame.getGameDate() + " " + gameLink + " 開始");
+								BatterPitcherInfoList batterPitcherInfo = parseGameDetails(gameLink);
+								if (batterPitcherInfo != null) {
+									convertPlayerWithDiagnostics(batterPitcherInfo, baseballGame, gameLink);
+								}
+								System.out.println(baseballGame.getGameDate() + "終了");
+								successCount++;
 							}
-							System.out.println(baseballGame.getGameDate() + "終了");
+						} catch (Exception e) {
+							failCount++;
+							failedGames.add(gameLink + " (" + e.getMessage() + ")");
+							System.err.println("===========================================");
+							System.err.println("試合エラー: " + gameLink);
+							System.err.println("エラー内容: " + e.getMessage());
+							e.printStackTrace();
+							System.err.println("===========================================");
 						}
 					}
 				}
 			}
 		}
-		System.out.println("一括取り込み完了");
+		System.out.println("一括取り込み完了 success=" + successCount + " fail=" + failCount);
+		if (!failedGames.isEmpty()) {
+			System.out.println("=== 失敗試合一覧 ===");
+			failedGames.forEach(System.out::println);
+		}
+	}
+
+	/**
+	 * 診断情報付きconvertPlayer - データ不整合を詳細にログ出力
+	 */
+	private void convertPlayerWithDiagnostics(BatterPitcherInfoList playerList, BaseballGame baseballGame, String gameLink) {
+		// 上のチーム情報をサマリー
+		long topPitcherTotal = playerList.getTopPitcherResults().stream()
+				.mapToLong(p -> Long.parseLong(p.getMatchNumber())).sum();
+		long bottomPitcherTotal = playerList.getBottomPitcherResults().stream()
+				.mapToLong(p -> Long.parseLong(p.getMatchNumber())).sum();
+		int topBatterCount = playerList.getTopBatterResults().size();
+		int bottomBatterCount = playerList.getBottomBatterResults().size();
+
+		System.out.println("[診断] " + gameLink);
+		System.out.println("  上投手対戦数合計=" + topPitcherTotal + " vs 下打者数=" + bottomBatterCount);
+		System.out.println("  下投手対戦数合計=" + bottomPitcherTotal + " vs 上打者数=" + topBatterCount);
+
+		if (topPitcherTotal != bottomBatterCount) {
+			System.err.println("⚠️ 不整合: 上投手の対戦数合計(" + topPitcherTotal + ") ≠ 下打者の打席数(" + bottomBatterCount + ")");
+			System.err.println("  下打者一覧: " + playerList.getBottomBatterResults());
+			System.err.println("  上投手一覧: " + playerList.getTopPitcherResults());
+		}
+		if (bottomPitcherTotal != topBatterCount) {
+			System.err.println("⚠️ 不整合: 下投手の対戦数合計(" + bottomPitcherTotal + ") ≠ 上打者の打席数(" + topBatterCount + ")");
+			System.err.println("  上打者一覧: " + playerList.getTopBatterResults());
+			System.err.println("  下投手一覧: " + playerList.getBottomPitcherResults());
+		}
+
+		convertPlayer(playerList, baseballGame);
 	}
 
 	/**
@@ -571,9 +619,9 @@ public class NPBWebScraper {
 				convBatterResults.setResult(batterInfo.getResult());
 				topConvBatterResultList.add(convBatterResults);
 			} catch (Exception e) {
-				System.out.println(e.getMessage());
-				System.out.println(baseballGame);
-				System.out.println(batterInfo);
+				System.err.println("⚠️ 上打者変換エラー: batterInfo=" + batterInfo + " gameDate=" + baseballGame.getGameDate());
+				System.err.println("  例外: " + e.getClass().getName() + ": " + e.getMessage());
+				e.printStackTrace();
 			}
 		}
 		// 下のバッター
@@ -587,9 +635,9 @@ public class NPBWebScraper {
 				convBatterResults.setResult(batterInfo.getResult());
 				bottomConvBatterResultList.add(convBatterResults);
 			} catch (Exception e) {
-				System.out.println(e.getMessage());
-				System.out.println(baseballGame);
-				System.out.println(batterInfo);
+				System.err.println("⚠️ 下打者変換エラー: batterInfo=" + batterInfo + " gameDate=" + baseballGame.getGameDate());
+				System.err.println("  例外: " + e.getClass().getName() + ": " + e.getMessage());
+				e.printStackTrace();
 			}
 		}
 		// 上のピッチャー

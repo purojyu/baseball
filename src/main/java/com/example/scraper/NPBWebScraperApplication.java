@@ -20,11 +20,12 @@ public class NPBWebScraperApplication {
     }
 
     // バッチ一括取り込み用（ローカル実行専用、Lambda起動時には実行しない）
+    // 使用時はコメントアウトを外し、ローカルでNeon DB接続して実行する
     // @Bean
     // CommandLineRunner run(NPBWebScraper scraper) {
     //     return args -> {
     //         List<String> years = Arrays.asList("2026");
-    //         List<String> months = Arrays.asList("03", "04");
+    //         List<String> months = Arrays.asList("03", "04", "05");
     //         scraper.scrapeBatch(years, months);
     //     };
     // }

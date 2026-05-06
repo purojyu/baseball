@@ -78,6 +78,7 @@ resource "aws_lambda_function" "scraper" {
   environment {
     variables = {
       DATABASE_URL_SECRET_NAME = "baseball/database-url"
+      SPRING_PROFILES_ACTIVE   = "prod"
     }
   }
 

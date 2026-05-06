@@ -19,7 +19,7 @@ variable "github_repo" {
 variable "api_lambda_memory" {
   description = "Memory size for API Lambda (MB)"
   type        = number
-  default     = 1024
+  default     = 2048
 }
 
 variable "api_lambda_timeout" {
