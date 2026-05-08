@@ -150,7 +150,7 @@ export default {
 
 .note-text {
   font-size: 0.75rem;
-  color: #6c757d;
+  color: #495057;
 }
 
 .table {

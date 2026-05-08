@@ -3,12 +3,14 @@
     <div v-if="isLoading" class="loading-overlay">
       <div class="spinner"></div>
     </div>
-    <SearchBaseball :baseballTeamList="baseballTeamList" :pitcherList="pitcherList" :batterList="batterList" :years="years" @getPitcherList="getPitcherList" @getBatterList="getBatterList" @matchResultSearch="matchResultSearch" />
-    <SearchResultBaseball :matchResultList="matchResultList" />
-    <div v-if="errorMessage" class="alert alert-danger" role="alert">
-      {{ errorMessage }}
-    </div>
-    <SeoContent />
+    <main>
+      <SearchBaseball :baseballTeamList="baseballTeamList" :pitcherList="pitcherList" :batterList="batterList" :years="years" @getPitcherList="getPitcherList" @getBatterList="getBatterList" @matchResultSearch="matchResultSearch" />
+      <SearchResultBaseball :matchResultList="matchResultList" />
+      <div v-if="errorMessage" class="alert alert-danger" role="alert">
+        {{ errorMessage }}
+      </div>
+      <SeoContent />
+    </main>
     <AppFooter />
   </div>
 </template>
@@ -259,14 +261,18 @@ label {
   margin: 0 auto;
 }
 
-.footer h4 {
+.footer h4,
+.footer .footer-heading {
   margin-bottom: 10px;
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 .disclaimer p {
   margin: 0;
   font-size: 14px;
-  color: #6c757d;
+  color: #495057;
   text-align: left;
 }
 

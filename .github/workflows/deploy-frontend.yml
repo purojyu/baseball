@@ -48,8 +48,27 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Deploy to S3
-        run: aws s3 sync dist/ s3://${{ secrets.S3_BUCKET_NAME }}/ --delete
+      - name: Deploy to S3 (hashed assets - 1 year cache)
+        run: |
+          aws s3 sync dist/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
+            --delete \
+            --cache-control "public,max-age=31536000,immutable" \
+            --exclude "index.html" \
+            --exclude "manifest.json" \
+            --exclude "robots.txt" \
+            --exclude "sitemap.xml" \
+            --exclude "*.ico"
+
+      - name: Deploy to S3 (HTML/manifest - no cache)
+        run: |
+          aws s3 sync dist/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
+            --cache-control "public,max-age=0,must-revalidate" \
+            --exclude "*" \
+            --include "index.html" \
+            --include "manifest.json" \
+            --include "robots.txt" \
+            --include "sitemap.xml" \
+            --include "*.ico"
 
       - name: Invalidate CloudFront cache
         run: |
