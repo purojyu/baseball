@@ -7,25 +7,40 @@
 
   <!-- モバイル対応 -->
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#0056b3">
+  <meta name="format-detection" content="telephone=no">
+
+  <!-- 検索エンジン向け -->
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta name="googlebot" content="index,follow">
+  <meta name="author" content="Pitcher-vs-Batter">
+  <meta name="keywords" content="プロ野球,NPB,対戦成績,投手,打者,野手,検索,セ・リーグ,パ・リーグ,打率,本塁打,被打率,日本野球機構,対戦データ,得意,苦手,2026">
 
   <!-- ★ タブと検索結果の青いタイトル -->
-  <title>プロ野球 投手VS野手 対戦成績検索 | Pitcher-vs-Batter</title>
+  <title>プロ野球 投手VS打者 対戦成績検索 | NPB対戦データ | Pitcher-vs-Batter</title>
 
   <!-- ★ 検索結果の説明文（120 字以内）-->
   <meta name="description"
-        content="プロ野球(NPB) 投手別と打者別の個人の対戦成績を、年度・チームなどで検索できる画面です。">
+        content="プロ野球（NPB）の投手と打者の対戦成績（打率・本塁打など）を選手別に検索。セ・リーグ／パ・リーグ12球団に対応。得意・苦手な相手が一目でわかる無料ツール。">
 
   <!-- ★ OGP（SNS・Google サムネ）-->
-  <meta property="og:type"        content="website">
-  <meta property="og:url"         content="https://baseball-pitcher-vs-batter.com/">
-  <meta property="og:title"       content="プロ野球 投手VS野手 対戦成績検索 | Pitcher-vs-Batter">
-  <meta property="og:description" content="NPB 投手と打者の対戦データを一発検索！">
-  <meta property="og:image"       content="https://baseball-pitcher-vs-batter.com/img/ogp.png">
-  <meta property="og:site_name"   content="Pitcher-vs-Batter">
+  <meta property="og:type"          content="website">
+  <meta property="og:url"           content="https://baseball-pitcher-vs-batter.com/">
+  <meta property="og:title"         content="プロ野球 投手VS打者 対戦成績検索 | NPB対戦データ">
+  <meta property="og:description"   content="NPB投手と打者の対戦成績（打率・本塁打など）を選手別に検索！得意・苦手な相手が一目でわかる無料ツール。">
+  <meta property="og:image"         content="https://baseball-pitcher-vs-batter.com/img/ogp.png">
+  <meta property="og:image:width"   content="1200">
+  <meta property="og:image:height"  content="630">
+  <meta property="og:image:alt"     content="プロ野球 投手VS打者 対戦成績検索">
+  <meta property="og:site_name"     content="Pitcher-vs-Batter">
+  <meta property="og:locale"        content="ja_JP">
 
-  <!-- Twitter Card（任意）-->
-  <meta name="twitter:card"  content="summary_large_image">
-  <meta name="twitter:image" content="https://baseball-pitcher-vs-batter.com/img/ogp.png">
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:title"       content="プロ野球 投手VS打者 対戦成績検索 | NPB対戦データ">
+  <meta name="twitter:description" content="NPB投手と打者の対戦成績を選手別に検索！得意・苦手な相手が一目でわかる無料ツール。">
+  <meta name="twitter:image"       content="https://baseball-pitcher-vs-batter.com/img/ogp.png">
+  <meta name="twitter:image:alt"   content="プロ野球 投手VS打者 対戦成績検索">
 
   <!-- ファビコン -->
   <link rel="icon" href="<%= BASE_URL %>favicon_v2.ico">
@@ -34,11 +49,68 @@
 
   <!-- ★ canonical を明示（URL を 1 本化）-->
   <link rel="canonical" href="https://baseball-pitcher-vs-batter.com/">
+
+  <!-- ★ 構造化データ（JSON-LD）：WebSite + WebApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://baseball-pitcher-vs-batter.com/#website",
+        "url": "https://baseball-pitcher-vs-batter.com/",
+        "name": "Pitcher-vs-Batter",
+        "description": "プロ野球（NPB）の投手と打者の対戦成績検索サイト",
+        "inLanguage": "ja-JP"
+      },
+      {
+        "@type": "WebApplication",
+        "name": "プロ野球 投手VS打者 対戦成績検索",
+        "url": "https://baseball-pitcher-vs-batter.com/",
+        "applicationCategory": "SportsApplication",
+        "operatingSystem": "Any",
+        "description": "プロ野球（NPB）の投手と打者の対戦成績（打率・本塁打など）を選手別に検索できる無料ツール。",
+        "inLanguage": "ja-JP",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "JPY"
+        },
+        "about": {
+          "@type": "SportsOrganization",
+          "name": "日本野球機構（NPB）",
+          "url": "https://npb.jp/"
+        }
+      }
+    ]
+  }
+  </script>
 </head>
 
 <body>
   <noscript>
-    <strong>このアプリは JavaScript が必須です。ブラウザ設定で有効化してください。</strong>
+    <!-- JS無効環境向けSEOコンテンツ（クローラーも参照する） -->
+    <header>
+      <h1>プロ野球 投手VS打者 対戦成績検索 | Pitcher-vs-Batter</h1>
+    </header>
+    <main>
+      <p>プロ野球（NPB）の投手 × 打者の対戦成績を選手別に検索する画面です。</p>
+      <section>
+        <h2>このサイトでできること</h2>
+        <ul>
+          <li>投手と打者を指定して対戦成績（打率・本塁打・打席数など）を検索</li>
+          <li>2016年以降の通算成績、または年度別の検索が可能</li>
+          <li>セ・リーグ／パ・リーグ全12球団に対応</li>
+          <li>得意な相手・苦手な相手の傾向把握</li>
+        </ul>
+      </section>
+      <section>
+        <h2>対応している球団</h2>
+        <p>セ・リーグ：読売ジャイアンツ、阪神タイガース、横浜DeNAベイスターズ、広島東洋カープ、東京ヤクルトスワローズ、中日ドラゴンズ</p>
+        <p>パ・リーグ：福岡ソフトバンクホークス、北海道日本ハムファイターズ、千葉ロッテマリーンズ、東北楽天ゴールデンイーグルス、オリックス・バファローズ、埼玉西武ライオンズ</p>
+      </section>
+      <p><strong>このアプリは JavaScript が必須です。ブラウザ設定で有効化してください。</strong></p>
+    </main>
   </noscript>
   <div id="app"></div>
   <!-- built files will be auto injected -->

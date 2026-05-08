@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /baseball/api/
+
+Sitemap: https://baseball-pitcher-vs-batter.com/sitemap.xml
