@@ -44,7 +44,7 @@ resource "aws_scheduler_schedule" "scraper_daily" {
     mode = "OFF"
   }
 
-  schedule_expression          = "cron(0 2 * * ? *)"
+  schedule_expression          = "cron(0 10 * * ? *)"
   schedule_expression_timezone = "Asia/Tokyo"
 
   target {
