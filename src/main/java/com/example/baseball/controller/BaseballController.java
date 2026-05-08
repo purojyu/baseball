@@ -41,6 +41,20 @@ public class BaseballController {
 	private final AtBatStatisticsService atBatStatisticsService;
 
 	/**
+	 * Lambdaウォームアップ用エンドポイント
+	 * EventBridgeから5並列で呼ばれる前提で、2秒スリープして並列コンテナを確保する
+	 */
+	@GetMapping("/warmup")
+	public ResponseEntity<String> warmup() {
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+		return ResponseEntity.ok("warm");
+	}
+
+	/**
 	 * 初期表示データ（チーム一覧、年度一覧）を取得する
 	 * @return チームリストおよび年度リスト
 	 */

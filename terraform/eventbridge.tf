@@ -53,22 +53,26 @@ resource "aws_scheduler_schedule" "scraper_daily" {
   }
 }
 
-# API Lambda warmup schedule（コールドスタート対策、10分おき）
+# API Lambda warmup schedules（コールドスタート対策）
+# 5個のスケジュールを同時刻にcron発火させ、warmupエンドポイントが2秒sleepすることで
+# 5並列コンテナをwarm維持する。これによりフロントエンドが並列API呼び出ししてもcoldにならない。
 resource "aws_scheduler_schedule" "api_warmup" {
-  name       = "baseball-api-warmup"
+  count = 5
+
+  name       = "baseball-api-warmup-${count.index + 1}"
   group_name = "default"
 
   flexible_time_window {
     mode = "OFF"
   }
 
-  schedule_expression = "rate(10 minutes)"
+  # 毎時 0,10,20,30,40,50分に5個まとめて発火
+  schedule_expression = "cron(0/10 * * * ? *)"
 
   target {
     arn      = aws_lambda_function.api.arn
     role_arn = aws_iam_role.scheduler.arn
 
-    # ヘルスチェックパス用のダミーAPI Gatewayイベント
     input = jsonencode({
       requestContext = {
         http = {
