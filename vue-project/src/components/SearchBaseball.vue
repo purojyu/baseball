@@ -19,9 +19,9 @@
     <hr />
     <!-- 注意書き -->
     <div class="notice mt-3">
-      <p>仕様</p>
-      <div class="text-left small-text">
-        <ul>
+      <p class="text-center">仕様</p>
+      <div class="text-center small-text">
+        <ul class="list-unstyled mb-0">
           <li>プロ野球（NPB）の投手と野手の個人の対戦成績を検索する画面です。</li>
           <li>選択した選手の得意・苦手な選手などがわかります。</li>
           <li>投手名か野手名のどちらか一方は必ず選択して検索ボタンを押下してください。</li>
