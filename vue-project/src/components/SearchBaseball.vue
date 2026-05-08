@@ -265,15 +265,9 @@ export default {
 <style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 <style scoped>
 .vs-text {
-  display: inline-block;
-  font-family: "Impact", "Oswald", "Arial Black", sans-serif;
-  font-size: 2.4rem;
-  font-weight: 900;
-  font-style: italic;
-  letter-spacing: 0.08em;
-  color: #1976d2;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transform: skewX(-8deg);
+  font-weight: bold;
+  font-size: 24px;
+  color: #0056b3;
 }
 
 /* 注意書きリスト：ブロック中央寄せ + 行頭は左揃え + ・を表示 */
@@ -286,7 +280,7 @@ export default {
 
 @media (max-width: 575px) {
   .vs-text {
-    font-size: 1.8rem;
+    font-size: 20px;
   }
 }
 </style>
