@@ -121,11 +121,8 @@ export default {
   margin-bottom: 0.3rem;
 }
 
-/* リスト・FAQ：ブロックは中央配置、行頭は揃える（inline-block + text-align:left） */
 .seo-list,
 .faq-list {
-  display: inline-block;
-  text-align: left;
   list-style: none;
   padding-left: 0;
   margin-bottom: 0;
