@@ -271,10 +271,7 @@ export default {
   font-weight: 900;
   font-style: italic;
   letter-spacing: 0.08em;
-  background: linear-gradient(135deg, #d32f2f 0%, #1976d2 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #1976d2;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transform: skewX(-8deg);
 }
