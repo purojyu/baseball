@@ -17,7 +17,7 @@
     <div class="notice mt-3">
       <p class="text-center">仕様</p>
       <div class="text-center small-text">
-        <ul class="list-unstyled mb-0 notice-list">
+        <ul class="mb-0 notice-list">
           <li>プロ野球（NPB）の投手と野手の個人の対戦成績を検索する画面です。</li>
           <li>選択した選手の得意・苦手な選手などがわかります。</li>
           <li>投手名か野手名のどちらか一方は必ず選択して検索ボタンを押下してください。</li>
@@ -112,15 +112,6 @@
       <b-button variant="primary" :disabled="!isSearchEnabled" class="mt-4 mb-4 search-button" @click="matchResultSearch">検索</b-button>
     </div>
     <hr />
-
-    <!-- フッター: Xリンク -->
-    <footer class="text-center mt-4 mb-3">
-      <a href="https://x.com/JANYS992112" target="_blank" rel="noopener noreferrer" class="x-link">
-        <svg class="x-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
-        </svg>
-      </a>
-    </footer>
   </div>
 </template>
 
@@ -274,45 +265,31 @@ export default {
 <style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 <style scoped>
 .vs-text {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #333;
-  letter-spacing: 0.05em;
+  display: inline-block;
+  font-family: "Impact", "Oswald", "Arial Black", sans-serif;
+  font-size: 2.4rem;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.08em;
+  background: linear-gradient(135deg, #d32f2f 0%, #1976d2 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transform: skewX(-8deg);
 }
 
-/* 注意書きリスト：ブロック中央寄せ + 行頭は左揃え */
+/* 注意書きリスト：ブロック中央寄せ + 行頭は左揃え + ・を表示 */
 .notice-list {
   display: inline-block;
   text-align: left;
-}
-
-.x-link {
-  display: inline-block;
-  transition: transform 0.2s ease;
-}
-
-.x-link:hover {
-  transform: scale(1.1);
-}
-
-.x-icon {
-  width: 32px;
-  height: 32px;
-  fill: #000000;
-  transition: fill 0.2s ease;
-}
-
-.x-link:hover .x-icon {
-  fill: #1DA1F2;
+  list-style-position: outside;
+  padding-left: 1.2em;
 }
 
 @media (max-width: 575px) {
   .vs-text {
-    font-size: 1.4rem;
-  }
-  .x-icon {
-    width: 28px;
-    height: 28px;
+    font-size: 1.8rem;
   }
 }
 </style>
