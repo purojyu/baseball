@@ -64,7 +64,7 @@ export default {
   border-radius: 6px;
   background-color: #f8fbfd;
   transition: background-color 0.2s ease;
-  text-align: left;
+  text-align: center;
 }
 
 .seo-details[open] {
@@ -121,8 +121,13 @@ export default {
   margin-bottom: 0.3rem;
 }
 
-.seo-list {
-  padding-left: 2.4em;
+/* リスト・FAQ：ブロックは中央配置、行頭は揃える（inline-block + text-align:left） */
+.seo-list,
+.faq-list {
+  display: inline-block;
+  text-align: left;
+  list-style: none;
+  padding-left: 0;
   margin-bottom: 0;
 }
 
@@ -132,10 +137,6 @@ export default {
 
 .team-list {
   margin-bottom: 0.5rem;
-}
-
-.faq-list {
-  margin-bottom: 0;
 }
 
 .faq-list dt {
@@ -149,7 +150,7 @@ export default {
 }
 
 .faq-list dd {
-  margin-left: 1em;
+  margin-left: 0;
   margin-bottom: 0.3rem;
 }
 
