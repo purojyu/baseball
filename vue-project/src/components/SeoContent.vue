@@ -53,6 +53,7 @@ export default {
   font-size: 0.9rem;
   color: #333;
   line-height: 1.7;
+  text-align: left;
 }
 
 .seo-details {
