@@ -57,10 +57,10 @@ export default {
 }
 
 .seo-details {
-  display: inline-block;
+  display: block;
   width: 100%;
   max-width: 600px;
-  margin-bottom: 0.5rem;
+  margin: 0 auto 0.5rem;
   border: 1px solid #d6e4f0;
   border-radius: 6px;
   background-color: #f8fbfd;
