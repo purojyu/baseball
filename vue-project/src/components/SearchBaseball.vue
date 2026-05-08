@@ -14,7 +14,7 @@
     </b-row>
     <hr />
     <!-- 概要 -->
-    <p class="text-center small-text mt-3 mb-0">プロ野球（NPB）の投手と打者の対戦成績（打率・本塁打など）を選手別に検索できます。得意・苦手な相手が一目でわかる画面です。</p>
+    <p class="text-center small-text mt-3 mb-0">プロ野球（NPB）の投手 × 打者の対戦成績を選手別に検索する画面です。</p>
 
     <!-- 年度選択 -->
     <b-row class="mt-3 justify-content-center">
