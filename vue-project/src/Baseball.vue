@@ -8,6 +8,7 @@
     <div v-if="errorMessage" class="alert alert-danger" role="alert">
       {{ errorMessage }}
     </div>
+    <SeoContent />
     <AppFooter />
   </div>
 </template>
@@ -15,6 +16,7 @@
 <script>
 import SearchBaseball from "./components/SearchBaseball.vue";
 import SearchResultBaseball from "./components/SearchResultBaseball.vue";
+import SeoContent from "./components/SeoContent.vue";
 import AppFooter from "./components/AppFooter.vue";
 
 export default {
@@ -22,6 +24,7 @@ export default {
   components: {
     SearchBaseball,
     SearchResultBaseball,
+    SeoContent,
     AppFooter,
   },
   data() {

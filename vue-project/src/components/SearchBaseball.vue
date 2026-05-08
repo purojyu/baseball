@@ -9,7 +9,7 @@
         <span class="vs-text">VS</span>
       </b-col>
       <b-col cols="4">
-        <label class="header_font text-left batter-label">野手</label>
+        <label class="header_font text-left batter-label">打者</label>
       </b-col>
     </b-row>
     <hr />
@@ -59,7 +59,7 @@
         </multiselect>
       </b-col>
       <b-col cols="6" xs="6" class="mb-3">
-        <label>野手チーム</label>
+        <label>打者チーム</label>
         <multiselect v-model="selectBatterTeamOptions" :options="batterTeamOptions" label="batterTeamNm" track-by="batterTeamId" placeholder="チーム名を入力して絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="''" :allowEmpty="false" required @input="this.getBatterList">
           <template slot="noResult">
             <span>{{ defaultLabel.noDateLabel }}</span>
@@ -85,7 +85,7 @@
         </multiselect>
       </b-col>
       <b-col cols="6" xs="6" class="mb-3">
-        <label>野手名</label>
+        <label>打者名</label>
         <multiselect v-model="selectBatterOptions" :options="filteredBatterList" label="playerNm" track-by="playerId" placeholder="選手名（漢字／カナ）を入力で絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="'解除'" @search-change="updateBatterSearch" :filterable="false" :internal-search="false">
           <template slot="noResult">
             <span>{{ defaultLabel.noDateLabel }}</span>
@@ -105,7 +105,7 @@
         class="mt-4 mb-4 search-button"
         @click="matchResultSearch"
         v-b-tooltip.hover.bottom
-        title="投手名か野手名のどちらか一方は必ず選択して検索ボタンを押下してください"
+        title="投手名か打者名のどちらか一方は必ず選択して検索ボタンを押下してください"
       >検索</b-button>
     </div>
     <hr />
