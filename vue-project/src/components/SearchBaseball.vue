@@ -6,11 +6,7 @@
         <label class="header_font text-right pitcher-label">投手</label>
       </b-col>
       <b-col cols="4" class="text-center">
-        <a href="https://x.com/JANYS992112" target="_blank" rel="noopener noreferrer" class="x-link">
-          <svg class="x-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
-          </svg>
-        </a>
+        <span class="vs-text">VS</span>
       </b-col>
       <b-col cols="4">
         <label class="header_font text-left batter-label">野手</label>
@@ -116,6 +112,15 @@
       <b-button variant="primary" :disabled="!isSearchEnabled" class="mt-4 mb-4 search-button" @click="matchResultSearch">検索</b-button>
     </div>
     <hr />
+
+    <!-- フッター: Xリンク -->
+    <footer class="text-center mt-4 mb-3">
+      <a href="https://x.com/JANYS992112" target="_blank" rel="noopener noreferrer" class="x-link">
+        <svg class="x-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+        </svg>
+      </a>
+    </footer>
   </div>
 </template>
 
@@ -268,6 +273,13 @@ export default {
 
 <style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 <style scoped>
+.vs-text {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333;
+  letter-spacing: 0.05em;
+}
+
 .x-link {
   display: inline-block;
   transition: transform 0.2s ease;
@@ -278,8 +290,8 @@ export default {
 }
 
 .x-icon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   fill: #000000;
   transition: fill 0.2s ease;
 }
@@ -289,9 +301,12 @@ export default {
 }
 
 @media (max-width: 575px) {
+  .vs-text {
+    font-size: 1.4rem;
+  }
   .x-icon {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
   }
 }
 </style>
