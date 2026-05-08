@@ -53,15 +53,19 @@ export default {
   font-size: 0.9rem;
   color: #333;
   line-height: 1.7;
-  text-align: left;
+  text-align: center;
 }
 
 .seo-details {
+  display: inline-block;
+  width: 100%;
+  max-width: 600px;
   margin-bottom: 0.5rem;
   border: 1px solid #d6e4f0;
   border-radius: 6px;
   background-color: #f8fbfd;
   transition: background-color 0.2s ease;
+  text-align: left;
 }
 
 .seo-details[open] {
@@ -73,9 +77,8 @@ export default {
   padding: 0.6rem 1rem;
   list-style: none;
   user-select: none;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  position: relative;
+  text-align: center;
 }
 
 .seo-details summary::-webkit-details-marker {
@@ -87,10 +90,14 @@ export default {
   font-size: 0.7rem;
   color: #0056b3;
   transition: transform 0.2s ease;
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .seo-details[open] summary::after {
-  transform: rotate(180deg);
+  transform: translateY(-50%) rotate(180deg);
 }
 
 .seo-details summary h2 {
