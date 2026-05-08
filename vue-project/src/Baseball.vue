@@ -1,7 +1,14 @@
 <template>
   <div id="app">
     <div v-if="isLoading" class="loading-overlay">
-      <div class="spinner"></div>
+      <div class="loading-content">
+        <div class="spinner"></div>
+        <p class="loading-text">読み込み中...</p>
+        <p v-if="showSlowLoadingMessage" class="loading-subtext">
+          初回の読み込みには時間がかかることがあります<br>
+          <small>（最大30秒程度）</small>
+        </p>
+      </div>
     </div>
     <main>
       <SearchBaseball :baseballTeamList="baseballTeamList" :pitcherList="pitcherList" :batterList="batterList" :years="years" @getPitcherList="getPitcherList" @getBatterList="getBatterList" @matchResultSearch="matchResultSearch" />
@@ -38,10 +45,29 @@ export default {
       errorMessage: "",
       years: [],
       isLoading: false,
+      showSlowLoadingMessage: false,
+      slowLoadingTimer: null,
     };
   },
   mounted() {
     this.getInitData();
+  },
+  watch: {
+    isLoading(newVal) {
+      if (newVal) {
+        // 読み込み開始：5秒後に「初回は時間かかる」メッセージ表示
+        this.slowLoadingTimer = setTimeout(() => {
+          this.showSlowLoadingMessage = true;
+        }, 5000);
+      } else {
+        // 読み込み完了：タイマーリセット
+        if (this.slowLoadingTimer) {
+          clearTimeout(this.slowLoadingTimer);
+          this.slowLoadingTimer = null;
+        }
+        this.showSlowLoadingMessage = false;
+      }
+    },
   },
   methods: {
 async getInitData() {
@@ -303,13 +329,51 @@ label {
   z-index: 9999; /* 他の要素より前面に表示 */
 }
 
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-width: 90%;
+}
+
+.loading-text {
+  margin: 0;
+  font-size: 1rem;
+  color: #0056b3;
+  font-weight: bold;
+}
+
+.loading-subtext {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #495057;
+  text-align: center;
+  line-height: 1.5;
+  animation: fadeIn 0.4s ease-in;
+}
+
+.loading-subtext small {
+  color: #6c757d;
+  font-size: 0.75rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* スピナーのスタイル */
 .spinner {
-  border: 12px solid #f3f3f3;
-  border-top: 12px solid #3498db;
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #3498db;
   border-radius: 50%;
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   animation: spin 1s linear infinite;
 }
 
