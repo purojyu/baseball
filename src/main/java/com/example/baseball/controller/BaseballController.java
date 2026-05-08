@@ -42,12 +42,13 @@ public class BaseballController {
 
 	/**
 	 * Lambdaウォームアップ用エンドポイント
-	 * EventBridgeから5並列で呼ばれる前提で、2秒スリープして並列コンテナを確保する
+	 * EventBridgeから10並列で呼ばれる前提で、3秒スリープして並列コンテナを確保する
+	 * EventBridgeのslight skew (数百ms) を吸収するため2秒→3秒に延長
 	 */
 	@GetMapping("/warmup")
 	public ResponseEntity<String> warmup() {
 		try {
-			Thread.sleep(2000);
+			Thread.sleep(3000);
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		}

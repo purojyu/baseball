@@ -57,7 +57,7 @@ resource "aws_scheduler_schedule" "scraper_daily" {
 # 5個のスケジュールを同時刻にcron発火させ、warmupエンドポイントが2秒sleepすることで
 # 5並列コンテナをwarm維持する。これによりフロントエンドが並列API呼び出ししてもcoldにならない。
 resource "aws_scheduler_schedule" "api_warmup" {
-  count = 5
+  count = 10
 
   name       = "baseball-api-warmup-${count.index + 1}"
   group_name = "default"
