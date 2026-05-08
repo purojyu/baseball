@@ -59,7 +59,6 @@ export default {
 .seo-details {
   display: block;
   width: 100%;
-  max-width: 600px;
   margin: 0 auto 0.5rem;
   border: 1px solid #d6e4f0;
   border-radius: 6px;
