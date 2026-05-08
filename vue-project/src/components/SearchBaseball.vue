@@ -13,18 +13,8 @@
       </b-col>
     </b-row>
     <hr />
-    <!-- 注意書き -->
-    <div class="notice mt-3">
-      <p class="text-center">仕様</p>
-      <div class="text-center small-text">
-        <ul class="mb-0 notice-list">
-          <li>プロ野球（NPB）の投手と野手の個人の対戦成績を検索する画面です。</li>
-          <li>選択した選手の得意・苦手な選手などがわかります。</li>
-          <li>投手名か野手名のどちらか一方は必ず選択して検索ボタンを押下してください。</li>
-          <li>通算の検索は、2016年以降の結果が表示されます。</li>
-        </ul>
-      </div>
-    </div>
+    <!-- 概要 -->
+    <p class="text-center small-text mt-3 mb-0">プロ野球（NPB）の投手と野手の個人の対戦成績を検索する画面です。</p>
 
     <!-- 年度選択 -->
     <b-row class="mt-3 justify-content-center">
@@ -109,7 +99,14 @@
 
     <!-- 検索ボタン -->
     <div class="text-center">
-      <b-button variant="primary" :disabled="!isSearchEnabled" class="mt-4 mb-4 search-button" @click="matchResultSearch">検索</b-button>
+      <b-button
+        variant="primary"
+        :disabled="!isSearchEnabled"
+        class="mt-4 mb-4 search-button"
+        @click="matchResultSearch"
+        v-b-tooltip.hover.bottom
+        title="投手名か野手名のどちらか一方は必ず選択して検索ボタンを押下してください"
+      >検索</b-button>
     </div>
     <hr />
   </div>

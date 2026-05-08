@@ -29,6 +29,7 @@
         </tr>
       </tbody>
     </table>
+    <p v-if="matchResultList.length" class="text-center note-text mt-2 mb-0">※通算の検索は、2016年以降の結果が表示されます。</p>
   </div>
 </template>
 
@@ -145,6 +146,11 @@ export default {
   padding: 1rem;
   overflow-x: auto;
   width: 100%;
+}
+
+.note-text {
+  font-size: 0.75rem;
+  color: #6c757d;
 }
 
 .table {
