@@ -68,7 +68,8 @@ public class YahooPitchScraper {
     private static final Pattern PLAYER_ID = Pattern.compile("/npb/player/(\\d+)/top");
     private static final Pattern GAME_DATE_PATTERN = Pattern.compile("(\\d{4})年(\\d{1,2})月(\\d{1,2})日");
     private static final Pattern BIRTH_DATE_PATTERN = Pattern.compile("(\\d{4})年(\\d{1,2})月(\\d{1,2})日");
-    private static final Pattern STYLE_PATTERN = Pattern.compile("top:(-?\\d+)px; left:(-?\\d+)px");
+    // 小数点座標にも対応 (例: top:0.0px; left:25.2px;)
+    private static final Pattern STYLE_PATTERN = Pattern.compile("top:(-?\\d+(?:\\.\\d+)?)px; left:(-?\\d+(?:\\.\\d+)?)px");
 
     private static final DateTimeFormatter DF = DateTimeFormatter.ISO_DATE;
 
@@ -109,7 +110,10 @@ public class YahooPitchScraper {
     private static final int GRID_COLS = 5;
     private static final int GRID_ROWS = 5;
     private static final int BORDER_PX = 0;         // パディング調整
-    private static final int BALL_RADIUS = 9;       // アイコン直径 18px ➔ 半径 9px
+    // ボール中心オフセット = border(1px) + margin(2px) + radius(10px) = 13px
+    // CSS: .bb-allocationChart { border:1px solid }, .bb-icon__ballCircle { width:20px; height:20px; margin:2px }
+    // 絶対配置はborder内側基準なので、5x5グリッド全体(200px)で計算する際はborderの1px加算
+    private static final int BALL_RADIUS = 13;
 
     private static final double CELL_W = (double) CHART_WIDTH / GRID_COLS;  // 32.0px
     private static final double CELL_H = (double) CHART_HEIGHT / GRID_ROWS; // 40.0px
@@ -543,7 +547,13 @@ public class YahooPitchScraper {
      * @return 球番号→ゾーン番号のマッピング。コースチャートがない場合は空マップ
      */
     public Map<Integer, Integer> buildCourseMap(Element section) {
-        Element chart = section.selectFirst(".bb-allocationChart");
+        // 「詳しい投球内容」テーブル内のチャート（td.bb-splitsTable__allocationChartBg配下）を優先選択。
+        // リプレイ用の小さい図（座標系が異なる）を取得しないようにする。
+        Element chart = section.selectFirst("td[class*=allocationChartBg] .bb-allocationChart");
+        if (chart == null) {
+            // フォールバック: 任意の.bb-allocationChartを使用
+            chart = section.selectFirst(".bb-allocationChart");
+        }
         if (chart == null) {
             return Collections.emptyMap();
         }
@@ -555,8 +565,9 @@ public class YahooPitchScraper {
             Matcher m = STYLE_PATTERN.matcher(span.attr("style"));
             if (!m.find()) continue;
 
-            int top = Integer.parseInt(m.group(1));
-            int left = Integer.parseInt(m.group(2));
+            // 小数点座標にも対応
+            double top = Double.parseDouble(m.group(1));
+            double left = Double.parseDouble(m.group(2));
 
             // 1) アイコン中心座標
             double cx = left + BALL_RADIUS;
@@ -565,7 +576,7 @@ public class YahooPitchScraper {
             // 2) 行・列 (0〜4)
             int col = (int) ((cx - BORDER_PX) / CELL_W);
             int row = (int) ((cy - BORDER_PX) / CELL_H);
-            
+
             // 3) マイナス座標や範囲外の処理
             if (top < 0) {
                 // マイナス座標の場合は最上段（row=0）に配置
@@ -575,7 +586,7 @@ public class YahooPitchScraper {
                 // マイナス座標の場合は最左列（col=0）に配置
                 col = 0;
             }
-            
+
             col = clamp(col, 0, GRID_COLS - 1);
             row = clamp(row, 0, GRID_ROWS - 1);
 

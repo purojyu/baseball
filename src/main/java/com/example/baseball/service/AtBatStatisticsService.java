@@ -31,7 +31,7 @@ public class AtBatStatisticsService {
         }
     }
 
-    private List<MatchResult> processResults(List<VAtBatGameDetails> atBatResults, 
+    private List<MatchResult> processResults(List<VAtBatGameDetails> atBatResults,
                                              Function<VAtBatGameDetails, Long> groupingFunction,
                                              Function<MatchResult, Long> sortingFunction) {
         return atBatResults.stream()
@@ -39,8 +39,9 @@ public class AtBatStatisticsService {
                 .values()
                 .stream()
                 .map(this::calcAtBatResult)
-                .sorted(Comparator.comparing(sortingFunction)
-                        .thenComparing(Comparator.comparing(MatchResult::getAtBatNumber).reversed()))
+                // 履歴データ不整合でteamIdがnullになる場合があるためnullsLastで安全にソート
+                .sorted(Comparator.comparing(sortingFunction, Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(Comparator.comparing(MatchResult::getAtBatNumber, Comparator.nullsLast(Comparator.naturalOrder())).reversed()))
                 .collect(Collectors.toList());
     }
 
