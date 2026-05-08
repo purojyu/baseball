@@ -1,6 +1,6 @@
 <template>
-  <div class="table-container">
-    <table v-if="matchResultList.length" class="table" ref="resultsTable">
+  <div v-if="matchResultList.length" class="table-container">
+    <table class="table" ref="resultsTable">
       <thead>
         <tr>
           <th v-for="field in fields" :key="field.key" :class="['th', { 'th-active': sortKey === field.key }]">
@@ -29,7 +29,7 @@
         </tr>
       </tbody>
     </table>
-    <p v-if="matchResultList.length" class="text-left note-text mt-2 mb-0">※通算の検索は、2016年以降の結果が表示されます。</p>
+    <p class="text-left note-text mt-2 mb-0">※通算の検索は、2016年以降の結果が表示されます。</p>
   </div>
 </template>
 
