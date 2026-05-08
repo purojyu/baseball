@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1>プロ野球｜対戦成績検索画面</h1>
+    <h1>プロ野球 個人対戦成績 検索</h1>
     <b-row class="mt-4 align-items-center">
       <b-col cols="4">
         <label class="header_font text-right pitcher-label">投手</label>
@@ -75,7 +75,7 @@
     <b-row class="mt-3">
       <b-col cols="6" xs="6" class="mb-3">
         <label>投手名</label>
-        <multiselect v-model="selectPitcherOptions" :options="filteredPitcherList" label="playerNm" track-by="playerId" placeholder="選手名を入力で絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="'解除'" @search-change="updatePitcherSearch" :filterable="false" :internal-search="false">
+        <multiselect v-model="selectPitcherOptions" :options="filteredPitcherList" label="playerNm" track-by="playerId" placeholder="選手名（漢字／カナ）を入力で絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="'解除'" @search-change="updatePitcherSearch" :filterable="false" :internal-search="false">
           <template slot="noResult">
             <span>{{ defaultLabel.noDateLabel }}</span>
           </template>
@@ -86,7 +86,7 @@
       </b-col>
       <b-col cols="6" xs="6" class="mb-3">
         <label>野手名</label>
-        <multiselect v-model="selectBatterOptions" :options="filteredBatterList" label="playerNm" track-by="playerId" placeholder="選手名を入力で絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="'解除'" @search-change="updateBatterSearch" :filterable="false" :internal-search="false">
+        <multiselect v-model="selectBatterOptions" :options="filteredBatterList" label="playerNm" track-by="playerId" placeholder="選手名（漢字／カナ）を入力で絞り込み可能" :selectLabel="'選択'" :selectedLabel="'選択中'" :deselectLabel="'解除'" @search-change="updateBatterSearch" :filterable="false" :internal-search="false">
           <template slot="noResult">
             <span>{{ defaultLabel.noDateLabel }}</span>
           </template>
