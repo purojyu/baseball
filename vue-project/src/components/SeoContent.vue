@@ -1,8 +1,7 @@
 <template>
   <section class="seo-content">
     <hr />
-    <!-- 使い方は初心者向け、デフォルト開く -->
-    <details class="seo-details" open>
+    <details class="seo-details">
       <summary><h2>使い方</h2></summary>
       <ol class="seo-list">
         <li><strong>年度を選択</strong>：通算（2016年以降）または特定年度を選びます。</li>
