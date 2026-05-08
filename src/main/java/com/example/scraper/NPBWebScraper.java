@@ -137,34 +137,44 @@ public class NPBWebScraper {
 	}
 
 	/**
-	 * 打席結果を取得（前日の試合のみ）
-	 * Lambda実行時間制限（15分）対応のため、前日分のみ取り込む。
-	 * Lambda実行時刻: 毎日 00:00 UTC（= 09:00 JST）
+	 * 打席結果を取得（直近3日間の試合）
+	 * NPBスケジュールページの更新遅延対策で、前日〜3日前までをチェック。
+	 * 既存試合はfindByGameDateAndTeamIdで自動スキップされる。
+	 * Lambda実行時刻: 毎日 02:00 JST
 	 * @throws IOException
 	 * @throws ParseException
 	 */
 	public void scrapeData() throws IOException, ParseException {
 		System.out.println("はじまり〜");
 
-		LocalDate yesterday = LocalDate.now(ZoneId.of("Asia/Tokyo")).minusDays(1);
-		String year = String.valueOf(yesterday.getYear());
-		String month = String.format("%02d", yesterday.getMonthValue());
-		String yesterdayMMdd = String.format("%02d%02d", yesterday.getMonthValue(), yesterday.getDayOfMonth());
+		LocalDate today = LocalDate.now(ZoneId.of("Asia/Tokyo"));
 
-		System.out.println("取込対象: " + yesterday);
+		for (int daysBack = 1; daysBack <= 3; daysBack++) {
+			LocalDate target = today.minusDays(daysBack);
+			String year = String.valueOf(target.getYear());
+			String month = String.format("%02d", target.getMonthValue());
+			String targetMMdd = String.format("%02d%02d", target.getMonthValue(), target.getDayOfMonth());
 
-		String url = "https://npb.jp/games/" + year + "/schedule_" + month + "_detail.html";
-		List<String> gameLinks = getGameLinks(url, year, yesterdayMMdd);
-		if (gameLinks != null && !gameLinks.isEmpty()) {
-			for (String gameLink : gameLinks) {
-				BaseballGame baseballGame = getGameInfo(gameLink);
-				if (baseballGame != null) {
-					System.out.println(baseballGame.getGameDate() + "開始");
-					BatterPitcherInfoList batterPitcherInfo = parseGameDetails(gameLink);
-					if (batterPitcherInfo != null) {
-						convertPlayer(batterPitcherInfo, baseballGame);
+			System.out.println("取込対象: " + target);
+
+			String url = "https://npb.jp/games/" + year + "/schedule_" + month + "_detail.html";
+			List<String> gameLinks = getGameLinks(url, year, targetMMdd);
+			if (gameLinks != null && !gameLinks.isEmpty()) {
+				for (String gameLink : gameLinks) {
+					try {
+						BaseballGame baseballGame = getGameInfo(gameLink);
+						if (baseballGame != null) {
+							System.out.println(baseballGame.getGameDate() + "開始");
+							BatterPitcherInfoList batterPitcherInfo = parseGameDetails(gameLink);
+							if (batterPitcherInfo != null) {
+								convertPlayer(batterPitcherInfo, baseballGame);
+							}
+							System.out.println(baseballGame.getGameDate() + "終了");
+						}
+					} catch (Exception e) {
+						System.err.println("試合エラー: " + gameLink + " - " + e.getMessage());
+						e.printStackTrace();
 					}
-					System.out.println(baseballGame.getGameDate() + "終了");
 				}
 			}
 		}
