@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.baseball.entity.BaseballPlayer;
 import com.example.baseball.entity.PitchResult;
 import com.example.baseball.entity.VAtBatGameDetails;
 import com.example.baseball.repository.PitchResultRepository;
@@ -36,6 +37,9 @@ public class PitchDetailService {
 
     @Autowired
     PitchResultRepository pitchResultRepository;
+
+    @Autowired
+    BaseballPlayerService baseballPlayerService;
 
     /**
      * 投手vs打者の詳細データを生成
@@ -324,6 +328,9 @@ public class PitchDetailService {
         info.put("batterNm", first.getBatterNm());
         info.put("batterTeamNm", first.getBatterTeamShortNm());
         info.put("batterNpbUrl", first.getBatterNpbUrl());
+
+        BaseballPlayer batter = baseballPlayerService.findById(first.getBatterId());
+        info.put("batterHanded", batter != null ? batter.getHanded() : null);
 
         return info;
     }

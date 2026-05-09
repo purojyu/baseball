@@ -87,7 +87,8 @@
         <div class="course-section">
           <h3 class="section-title">ゾーン別対戦成績 <span class="section-sub">打者目線 · 5×5コース別打率 (n={{ summary.ab }})</span></h3>
           <div class="course-with-silhouettes">
-            <img class="batter-silhouette left" :src="batterImageLeft" alt="" aria-hidden="true">
+            <img v-if="showLeftSilhouette" class="batter-silhouette left" :src="batterImageLeft" alt="" aria-hidden="true">
+            <div v-else class="batter-silhouette left placeholder" aria-hidden="true"></div>
             <div class="course-grid">
               <div
                 v-for="zone in courseStats"
@@ -100,7 +101,8 @@
                 <span v-if="zone.ab > 0" class="course-count">{{ zone.h }}/{{ zone.ab }}</span>
               </div>
             </div>
-            <img class="batter-silhouette right" :src="batterImageRight" alt="" aria-hidden="true">
+            <img v-if="showRightSilhouette" class="batter-silhouette right" :src="batterImageRight" alt="" aria-hidden="true">
+            <div v-else class="batter-silhouette right placeholder" aria-hidden="true"></div>
           </div>
         </div>
 
@@ -204,8 +206,8 @@
 </template>
 
 <script>
-import batterImageLeft from "@/assets/batter-silhouette-a.png";
-import batterImageRight from "@/assets/batter-silhouette-b.png";
+import batterImageLeft from "@/assets/batter-silhouette-b.png";
+import batterImageRight from "@/assets/batter-silhouette-a.png";
 
 export default {
   name: "MatchupDetail",
@@ -250,6 +252,15 @@ export default {
     maxPitchTypeAb() {
       if (!this.pitchTypeStats.length) return 1;
       return Math.max(...this.pitchTypeStats.map((pt) => pt.ab));
+    },
+    // 打席: "0"=右打, "1"=左打, "2"=両打
+    showLeftSilhouette() {
+      const h = this.info.batterHanded;
+      return h === "1" || h === "2";
+    },
+    showRightSilhouette() {
+      const h = this.info.batterHanded;
+      return h === "0" || h === "2";
     },
   },
   methods: {
@@ -479,6 +490,10 @@ export default {
   opacity: 0.6;
   pointer-events: none;
   user-select: none;
+}
+
+.batter-silhouette.placeholder {
+  visibility: hidden;
 }
 
 .course-grid {
