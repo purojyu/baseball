@@ -487,7 +487,8 @@ export default {
   flex: 0 0 auto;
   width: 64px;
   height: auto;
-  opacity: 0.6;
+  opacity: 0.85;
+  mix-blend-mode: multiply;
   pointer-events: none;
   user-select: none;
 }
