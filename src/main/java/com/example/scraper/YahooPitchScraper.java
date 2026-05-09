@@ -278,7 +278,7 @@ public class YahooPitchScraper {
                 
                 BaseballPlayer pit = resolvePlayer(pitId);
                 BaseballPlayer bat = resolvePlayer(batId);
-                
+
                 // 現在の攻撃チームを取得
                 String attackingTeam = extractAttackingTeam(doc);
                 AtBatResult lastBatterForTeam = lastBatterByTeam.get(attackingTeam);
@@ -806,29 +806,61 @@ public class YahooPitchScraper {
 
         // 選手情報取得前に待機
         safeSleep(MIN_PLAYER_INTERVAL, MAX_PLAYER_INTERVAL);
-        
+
         PlayerProfile prof = fetchPlayerProfileFromYahoo(yahooId);
 
-        // まず身長・体重を含めた精密検索を試行
+        // Step1: 名前+生年月日+身長+体重で精密検索
         bp = baseballPlayerService.findByPlayerProfileWithPhysical(
                 prof.getName(), prof.getBirthDate(), prof.getHeight(), prof.getWeight());
-        
-        // 精密検索で見つからない場合は名前と生年月日のみで検索
+
+        // Step2: 名前+生年月日のみで検索
         if (bp == null) {
             bp = baseballPlayerService.findByPlayerNmAndBirthDateByYahooNm(
                     prof.getName(), prof.getBirthDate());
-            
+
             if (bp != null) {
                 log.info("物理情報ミスマッチでも名前・生年月日で登録: yahooId={}, name={}, "
-                    + "Yahoo(身長={}cm, 体重={}kg) vs DB(身長={}cm, 体重={}kg)", 
-                    yahooId, prof.getName(), prof.getHeight(), prof.getWeight(), 
+                    + "Yahoo(身長={}cm, 体重={}kg) vs DB(身長={}cm, 体重={}kg)",
+                    yahooId, prof.getName(), prof.getHeight(), prof.getWeight(),
                     bp.getHeight(), bp.getWeight());
+            }
+        }
+
+        // Step3: 生年月日+身長+体重のみで検索（名前表記ブレ対応）
+        if (bp == null && prof.getBirthDate() != null && prof.getHeight() != null && prof.getWeight() != null) {
+            List<BaseballPlayer> candidates = baseballPlayerService.findByPhysicalProfile(
+                    prof.getBirthDate(), prof.getHeight(), prof.getWeight());
+
+            if (candidates.size() == 1) {
+                bp = candidates.get(0);
+                log.info("身体情報のみでマッチング成功: yahooId={}, yahooName={}, dbName={}, "
+                    + "birthDate={}, height={}cm, weight={}kg",
+                    yahooId, prof.getName(), bp.getPlayerNm(),
+                    prof.getBirthDate(), prof.getHeight(), prof.getWeight());
+            } else if (candidates.size() > 1) {
+                // 複数候補がある場合は名前の部分一致で絞り込み
+                String yahooName = prof.getName();
+                bp = candidates.stream()
+                        .filter(c -> c.getPlayerNm() != null
+                                && (c.getPlayerNm().contains(yahooName) || yahooName.contains(c.getPlayerNm())))
+                        .findFirst()
+                        .orElse(null);
+
+                if (bp != null) {
+                    log.info("身体情報+名前部分一致でマッチング成功: yahooId={}, yahooName={}, dbName={}, 候補数={}",
+                        yahooId, prof.getName(), bp.getPlayerNm(), candidates.size());
+                } else {
+                    log.warn("身体情報で{}件候補があるが名前部分一致なし: yahooId={}, name={}, 候補={}",
+                        candidates.size(), yahooId, prof.getName(),
+                        candidates.stream().map(BaseballPlayer::getPlayerNm).toList());
+                }
             }
         }
 
         if (bp == null) {
             throw new IllegalStateException(
-                    "BaseballPlayer に未登録: yahooId=" + yahooId + ", name=" + prof.getName() 
+                    "BaseballPlayer に未登録: yahooId=" + yahooId + ", name=" + prof.getName()
+                    + ", birthDate=" + prof.getBirthDate()
                     + ", height=" + prof.getHeight() + "cm, weight=" + prof.getWeight() + "kg");
         }
 

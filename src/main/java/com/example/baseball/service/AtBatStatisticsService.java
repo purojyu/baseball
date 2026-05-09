@@ -76,6 +76,8 @@ public class AtBatStatisticsService {
     }
 
     private void setCommonMatchResultProperties(MatchResult matchResult, VAtBatGameDetails firstRecord, List<VAtBatGameDetails> atBatResults) {
+        matchResult.setBatterId(firstRecord.getBatterId());
+        matchResult.setPitcherId(firstRecord.getPitcherId());
         matchResult.setBatterNm(firstRecord.getBatterNm());
         matchResult.setBatterNpbUrl(firstRecord.getBatterNpbUrl());
         

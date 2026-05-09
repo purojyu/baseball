@@ -11,7 +11,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(item, index) in sortedMatchResultList" :key="index">
+        <tr v-for="(item, index) in sortedMatchResultList" :key="index" class="clickable-row" @click="onRowClick(item)">
           <td v-for="field in fields" :key="field.key" :class="['td', getCellClass(field.key, item)]">
             <template v-if="field.key === 'pitcherNm'">
               <a :href="item.pitcherNpbUrl" target="_blank" rel="noopener noreferrer">{{ item.pitcherNm }}</a>
@@ -134,6 +134,9 @@ export default {
         this.sortAsc = true;
       }
     },
+    onRowClick(item) {
+      this.$emit("showPitchDetail", item);
+    },
   },
 };
 </script>
@@ -185,6 +188,10 @@ tbody tr:nth-of-type(even) {
 
 tbody tr:hover {
   background-color: #d4e4ff;
+}
+
+.clickable-row {
+  cursor: pointer;
 }
 /* チームカラーの定義 */
 
