@@ -44,6 +44,20 @@ public interface BaseballPlayerRepository extends JpaRepository<BaseballPlayer, 
 			    @Param("birthDate") LocalDate birthDate
 			);
 	
+	// 生年月日、身長、体重のみで検索（名前表記ブレ対応）
+	@Query(
+			  value = "SELECT * FROM BASEBALL_PLAYER " +
+			          "WHERE BIRTH_DATE = :birthDate " +
+			          "AND HEIGHT = :height " +
+			          "AND WEIGHT = :weight",
+			  nativeQuery = true
+			)
+			List<BaseballPlayer> findByPhysicalProfile(
+			    @Param("birthDate") LocalDate birthDate,
+			    @Param("height") Integer height,
+			    @Param("weight") Integer weight
+			);
+
 	// 選手名、生年月日、身長、体重で精密検索
 	@Query(
 			  value = "SELECT * FROM BASEBALL_PLAYER " +

@@ -45,6 +45,10 @@ public class BaseballPlayerService {
 	public BaseballPlayer findByPlayerProfileWithPhysical(String yahooNm, LocalDate birthDate, Integer height, Integer weight) {
 		return baseballPlayerRepository.findByPlayerProfileWithPhysical(yahooNm, birthDate, height, weight);
 	}
+
+	public List<BaseballPlayer> findByPhysicalProfile(LocalDate birthDate, Integer height, Integer weight) {
+		return baseballPlayerRepository.findByPhysicalProfile(birthDate, height, weight);
+	}
 	
 	public BaseballPlayer savePlayer(BaseballPlayer baseballPlayer){
 		return baseballPlayerRepository.save(baseballPlayer);

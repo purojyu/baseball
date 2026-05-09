@@ -11,12 +11,17 @@
       </div>
     </div>
     <main>
-      <SearchBaseball :baseballTeamList="baseballTeamList" :pitcherList="pitcherList" :batterList="batterList" :years="years" @getPitcherList="getPitcherList" @getBatterList="getBatterList" @matchResultSearch="matchResultSearch" />
-      <SearchResultBaseball :matchResultList="matchResultList" />
-      <div v-if="errorMessage" class="alert alert-danger" role="alert">
-        {{ errorMessage }}
-      </div>
-      <SeoContent />
+      <template v-if="!pitchDetail">
+        <SearchBaseball :baseballTeamList="baseballTeamList" :pitcherList="pitcherList" :batterList="batterList" :years="years" @getPitcherList="getPitcherList" @getBatterList="getBatterList" @matchResultSearch="matchResultSearch" />
+        <SearchResultBaseball :matchResultList="matchResultList" @showPitchDetail="showPitchDetail" />
+        <div v-if="errorMessage" class="alert alert-danger" role="alert">
+          {{ errorMessage }}
+        </div>
+        <SeoContent />
+      </template>
+      <template v-else>
+        <MatchupDetail :detail="pitchDetail" @close="pitchDetail = null" />
+      </template>
     </main>
     <AppFooter />
   </div>
@@ -25,6 +30,7 @@
 <script>
 import SearchBaseball from "./components/SearchBaseball.vue";
 import SearchResultBaseball from "./components/SearchResultBaseball.vue";
+import MatchupDetail from "./components/MatchupDetail.vue";
 import SeoContent from "./components/SeoContent.vue";
 import AppFooter from "./components/AppFooter.vue";
 
@@ -33,6 +39,7 @@ export default {
   components: {
     SearchBaseball,
     SearchResultBaseball,
+    MatchupDetail,
     SeoContent,
     AppFooter,
   },
@@ -47,6 +54,7 @@ export default {
       isLoading: false,
       showSlowLoadingMessage: false,
       slowLoadingTimer: null,
+      pitchDetail: null,
     };
   },
   mounted() {
@@ -154,6 +162,31 @@ async getInitData() {
     this.isLoading = false;
   }
 },
+    async showPitchDetail(matchResult) {
+      if (!matchResult.pitcherId || !matchResult.batterId) {
+        this.errorMessage = "投球詳細の表示にはIDが必要です";
+        return;
+      }
+      this.isLoading = true;
+      try {
+        const response = await this.$axios.get("/pitchDetail", {
+          params: { pitcherId: matchResult.pitcherId, batterId: matchResult.batterId },
+        });
+        if (response.status === 200) {
+          const responseData = response.data.data;
+          this.pitchDetail = responseData.pitchDetail || null;
+          this.errorMessage = "";
+        }
+      } catch (error) {
+        if (error.response && error.response.data && error.response.data.message) {
+          this.errorMessage = error.response.data.message;
+        } else {
+          this.errorMessage = "投球詳細の取得に失敗しました";
+        }
+      } finally {
+        this.isLoading = false;
+      }
+    },
   },
 };
 </script>

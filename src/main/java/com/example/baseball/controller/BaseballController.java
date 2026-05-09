@@ -1,12 +1,14 @@
 package com.example.baseball.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.baseball.dto.GetPlayerListRequest;
@@ -19,6 +21,7 @@ import com.example.baseball.entity.VAtBatGameDetails;
 import com.example.baseball.service.AtBatStatisticsService;
 import com.example.baseball.service.BaseballGameService;
 import com.example.baseball.service.BaseballTeamService;
+import com.example.baseball.service.PitchDetailService;
 import com.example.baseball.service.VAtBatGameDetailsService;
 import com.example.baseball.service.VBaseballPlayerHistoryService;
 
@@ -39,6 +42,7 @@ public class BaseballController {
 	private final VAtBatGameDetailsService vAtBatGameDetailsService;
 	private final BaseballGameService baseballGameService;
 	private final AtBatStatisticsService atBatStatisticsService;
+	private final PitchDetailService pitchDetailService;
 
 	/**
 	 * Lambdaウォームアップ用エンドポイント
@@ -156,7 +160,35 @@ public class BaseballController {
 	        return ResponseEntity.ok(response);
 	    }
 
-	    private Long parseLongOrNull(String value) {
+		/**
+	 * 投手vs打者の投球詳細データを取得
+	 * コース別打率、球種別打率、打席ログ、年度別成績、SPLITS
+	 */
+	@GetMapping("/pitchDetail")
+	public ResponseEntity<ResponseDto> getPitchDetail(
+			@RequestParam Long pitcherId,
+			@RequestParam Long batterId,
+			@RequestParam(defaultValue = "通算") String selectedYear) {
+
+		List<VAtBatGameDetails> atBatResults = vAtBatGameDetailsService.findByBatterAndPitcher(
+				0L, 0L, pitcherId, batterId, selectedYear);
+
+		if (atBatResults.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body(ResponseDto.builder().message(NO_MATCH_RESULT).build());
+		}
+
+		Map<String, Object> pitchDetail = pitchDetailService.buildPitchDetail(atBatResults);
+
+		ResponseDto response = ResponseDto.builder()
+				.data("pitchDetail", pitchDetail)
+				.message(SUCCESS_MESSAGE)
+				.build();
+
+		return ResponseEntity.ok(response);
+	}
+
+    private Long parseLongOrNull(String value) {
 	        if (value == null || value.trim().isEmpty()) {
 	            return null;
 	        }
