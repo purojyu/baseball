@@ -363,7 +363,7 @@ export default {
 .detail-title {
   font-size: 20px;
   font-weight: 700;
-  color: #dc2626;
+  color: #111827;
   margin: 0;
 }
 
