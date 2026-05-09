@@ -83,9 +83,9 @@
 
       <!-- メインコンテンツ -->
       <div class="detail-main">
-        <!-- コース別打率 -->
+        <!-- ゾーン別対戦成績 -->
         <div class="course-section">
-          <h3 class="section-title">コース別 打率 <span class="section-sub">打者目線 · 5×5ゾーン (n={{ summary.ab }})</span></h3>
+          <h3 class="section-title">ゾーン別対戦成績 <span class="section-sub">打者目線 · 5×5コース別打率 (n={{ summary.ab }})</span></h3>
           <div class="course-grid">
             <div
               v-for="zone in courseStats"
@@ -451,7 +451,7 @@ export default {
   color: #111827;
 }
 
-/* コース別打率 */
+/* ゾーン別対戦成績 */
 .course-section {
   margin-bottom: 24px;
 }

@@ -164,7 +164,7 @@ async getInitData() {
 },
     async showPitchDetail(matchResult) {
       if (!matchResult.pitcherId || !matchResult.batterId) {
-        this.errorMessage = "投球詳細の表示にはIDが必要です";
+        this.errorMessage = "ゾーン別対戦成績の表示にはIDが必要です";
         return;
       }
       this.isLoading = true;
@@ -181,7 +181,7 @@ async getInitData() {
         if (error.response && error.response.data && error.response.data.message) {
           this.errorMessage = error.response.data.message;
         } else {
-          this.errorMessage = "投球詳細の取得に失敗しました";
+          this.errorMessage = "ゾーン別対戦成績の取得に失敗しました";
         }
       } finally {
         this.isLoading = false;
