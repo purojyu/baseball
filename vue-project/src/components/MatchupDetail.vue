@@ -3,7 +3,7 @@
     <!-- ヘッダー -->
     <div class="detail-header">
       <button class="back-button" @click="$emit('close')">← 対戦一覧に戻る</button>
-      <h2 class="detail-title">NPB Matchup Lab</h2>
+      <h2 class="detail-title">{{ info.pitcherNm }} vs {{ info.batterNm }} 対戦成績</h2>
     </div>
 
     <div class="detail-layout">
@@ -86,17 +86,45 @@
         <!-- ゾーン別対戦成績 -->
         <div class="course-section">
           <h3 class="section-title">ゾーン別対戦成績 <span class="section-sub">打者目線 · 5×5コース別打率 (n={{ summary.ab }})</span></h3>
-          <div class="course-grid">
-            <div
-              v-for="zone in courseStats"
-              :key="zone.zone"
-              class="course-cell"
-              :style="{ backgroundColor: getCourseColor(zone.avg) }"
-              :class="{ 'strike-zone': isStrikeZone(zone.zone) }"
-            >
-              <span class="course-avg">{{ zone.avg !== null ? formatAvg(zone.avg) : '-' }}</span>
-              <span v-if="zone.ab > 0" class="course-count">{{ zone.h }}/{{ zone.ab }}</span>
+          <div class="course-with-silhouettes">
+            <svg class="batter-silhouette left" viewBox="0 0 100 240" aria-hidden="true" focusable="false">
+              <g fill="currentColor">
+                <ellipse cx="52" cy="24" rx="13" ry="15"/>
+                <path d="M44 26 Q40 30 44 34 Q54 34 60 30 L56 22 Z"/>
+                <path d="M38 40 Q52 36 64 42 L62 80 Q60 100 58 118 L36 118 Q34 100 34 82 Z"/>
+                <path d="M34 118 L62 118 L66 142 L28 142 Z"/>
+                <path d="M30 142 Q24 175 20 210 L16 232 L32 232 L36 200 Q40 165 42 142 Z"/>
+                <path d="M55 142 Q62 175 70 200 L78 232 L62 232 L56 210 Q50 175 47 142 Z"/>
+                <path d="M40 48 Q26 56 20 72 Q18 82 24 82 Q34 76 42 64 Q44 56 42 50 Z"/>
+                <path d="M60 48 Q72 58 76 74 Q76 84 70 82 Q60 76 54 64 Q52 56 56 50 Z"/>
+                <rect x="60" y="-8" width="7" height="78" rx="3" transform="rotate(-22 63 31)"/>
+              </g>
+            </svg>
+            <div class="course-grid">
+              <div
+                v-for="zone in courseStats"
+                :key="zone.zone"
+                class="course-cell"
+                :style="{ backgroundColor: getCourseColor(zone.avg) }"
+                :class="{ 'strike-zone': isStrikeZone(zone.zone) }"
+              >
+                <span class="course-avg">{{ zone.avg !== null ? formatAvg(zone.avg) : '-' }}</span>
+                <span v-if="zone.ab > 0" class="course-count">{{ zone.h }}/{{ zone.ab }}</span>
+              </div>
             </div>
+            <svg class="batter-silhouette right" viewBox="0 0 100 240" aria-hidden="true" focusable="false">
+              <g fill="currentColor">
+                <ellipse cx="52" cy="24" rx="13" ry="15"/>
+                <path d="M44 26 Q40 30 44 34 Q54 34 60 30 L56 22 Z"/>
+                <path d="M38 40 Q52 36 64 42 L62 80 Q60 100 58 118 L36 118 Q34 100 34 82 Z"/>
+                <path d="M34 118 L62 118 L66 142 L28 142 Z"/>
+                <path d="M30 142 Q24 175 20 210 L16 232 L32 232 L36 200 Q40 165 42 142 Z"/>
+                <path d="M55 142 Q62 175 70 200 L78 232 L62 232 L56 210 Q50 175 47 142 Z"/>
+                <path d="M40 48 Q26 56 20 72 Q18 82 24 82 Q34 76 42 64 Q44 56 42 50 Z"/>
+                <path d="M60 48 Q72 58 76 74 Q76 84 70 82 Q60 76 54 64 Q52 56 56 50 Z"/>
+                <rect x="60" y="-8" width="7" height="78" rx="3" transform="rotate(-22 63 31)"/>
+              </g>
+            </svg>
           </div>
         </div>
 
@@ -456,14 +484,50 @@ export default {
   margin-bottom: 24px;
 }
 
+.course-with-silhouettes {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.batter-silhouette {
+  flex: 0 0 auto;
+  width: 64px;
+  height: auto;
+  color: #9ca3af;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.batter-silhouette.right {
+  transform: scaleX(-1);
+}
+
 .course-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 2px;
-  max-width: 320px;
+  width: 320px;
+  flex-shrink: 0;
   border: 2px solid #d1d5db;
   border-radius: 4px;
   overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .batter-silhouette {
+    width: 40px;
+    opacity: 0.4;
+  }
+  .course-with-silhouettes {
+    gap: 4px;
+  }
+  .course-grid {
+    width: auto;
+    flex: 1 1 auto;
+    max-width: 320px;
+  }
 }
 
 .course-cell {
