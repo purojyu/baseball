@@ -16,7 +16,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.util.StringUtils;
 
 import com.example.baseball.entity.BaseballPlayer;
 import com.example.baseball.entity.BaseballPlayerHistory;
@@ -53,7 +52,7 @@ public class TradeScraper {
 					String date = tr.selectFirst("th.trdate").text().trim();
 					String playerUrl = tr.selectFirst("td.trname").select("a").attr("href");
 					String playerName = getPlayerName(playerUrl, year);
-					if(StringUtils.isEmpty(playerName)) {
+					if(playerName == null || playerName.isEmpty()) {
 						continue;
 					}
 					String fromTeam = tr.select("td[class*='trteam']").get(0).text().trim();

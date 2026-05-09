@@ -11,7 +11,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.util.StringUtils;
+import java.util.Objects;
 
 import com.example.baseball.entity.BaseballPlayer;
 import com.example.baseball.entity.BaseballPlayerHistory;
@@ -97,7 +97,7 @@ public class FirstNpbPlayerScraper {
 									// 最後のレコードの場合
 									if (i + 1 == rows.size()) {
 										// 2024年以外の場合
-										if (!StringUtils.equals(year, "2024")) {
+										if (!Objects.equals(year, "2024")) {
 										insBaseballPlayerHistory.setEndDate(convertToLocalDate(year + "/12/31"));
 										}
 									}else {
@@ -140,7 +140,7 @@ public class FirstNpbPlayerScraper {
 										}
 										// 最後の行の場合
 									} else {
-										if (!StringUtils.equals(year, "2024")) {
+										if (!Objects.equals(year, "2024")) {
 											baseballPlayerHistory.setEndDate(convertToLocalDate(year + "/12/31"));
 											baseballPlayerHistoryService.saveBaseballPlayerHistory(baseballPlayerHistory);
 										}

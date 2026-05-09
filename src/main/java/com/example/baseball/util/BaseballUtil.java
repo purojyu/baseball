@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
-import org.thymeleaf.util.StringUtils;
+import java.util.Objects;
 
 import com.example.baseball.entity.VAtBatGameDetails;
 
@@ -40,7 +40,7 @@ public class BaseballUtil {
             } 
             // フォアボール、デッドボール、犠打、犠牲フライは無視する
             else if (!result.contains(FOUR_BALL_RESULT) &&
-                     !StringUtils.equals(result, HIT_BALL_RESULT) &&
+                     !Objects.equals(result, HIT_BALL_RESULT) &&
                      !result.contains(SACRIFICE_HIT_RESULT) &&
                      !result.contains(SACRIFICE_FLY_RESULT)) {
                 atBats++;
@@ -111,7 +111,7 @@ public class BaseballUtil {
         int count = 0;
         for (VAtBatGameDetails detail : vAtBatGameDetails) {
             String result = detail.getResult();
-            if (result.contains(FOUR_BALL_RESULT) || StringUtils.equals(result, HIT_BALL_RESULT) ||
+            if (result.contains(FOUR_BALL_RESULT) || Objects.equals(result, HIT_BALL_RESULT) ||
                 result.contains(SACRIFICE_HIT_RESULT) || result.contains(SACRIFICE_FLY_RESULT)) {
                 count++;
             }
@@ -238,7 +238,7 @@ public class BaseballUtil {
     private static int countExactOccurrences(List<VAtBatGameDetails> vAtBatGameDetails, String result) {
         int count = 0;
         for (VAtBatGameDetails detail : vAtBatGameDetails) {
-            if (StringUtils.equals(detail.getResult(), result)) {
+            if (Objects.equals(detail.getResult(), result)) {
                 count++;
             }
         }

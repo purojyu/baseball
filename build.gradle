@@ -23,8 +23,6 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     compileOnly 'org.projectlombok:lombok'
@@ -36,11 +34,8 @@ dependencies {
     // Jsoup for HTML parsing
     implementation 'org.jsoup:jsoup:1.13.1'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    // AWS Lambda
+    // AWS Lambda (Scraper Lambdaで RequestHandler/Context を使用)
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.3'
-    implementation 'com.amazonaws:aws-lambda-java-events:3.11.4'
-    // AWS Lambda Runtime Interface Client (for container-based Lambda)
-    implementation 'com.amazonaws:aws-lambda-java-runtime-interface-client:2.5.0'
     // AWS SDK v2 Secrets Manager
     implementation platform('software.amazon.awssdk:bom:2.25.60')
     implementation 'software.amazon.awssdk:secretsmanager'

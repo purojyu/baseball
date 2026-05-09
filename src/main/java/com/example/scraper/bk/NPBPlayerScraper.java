@@ -14,7 +14,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.util.StringUtils;
+import java.util.Objects;
 
 import com.example.baseball.entity.BaseballPlayer;
 import com.example.baseball.entity.BaseballPlayerHistory;
@@ -87,8 +87,8 @@ public class NPBPlayerScraper {
                         String fromTeam = tr.select("td[class*='trteam']").get(0).text().trim();
                         String toTeam = tr.select("td[class*='trteam']").get(1).text().trim();
                         // 「〃」がある場合は一つ上の行を見る
-                        if (StringUtils.equals(date, "〃") || StringUtils.equals(fromTeam, "〃")
-                                || StringUtils.equals(toTeam, "〃")) {
+                        if (Objects.equals(date, "〃") || Objects.equals(fromTeam, "〃")
+                                || Objects.equals(toTeam, "〃")) {
                             for (int j = i - 1; j >= 0; j--) {
                                 Elements nextTrs = changePlayers.get(j).select("table > tbody > tr");
                                 for (Element nextTr : nextTrs) {
@@ -98,8 +98,8 @@ public class NPBPlayerScraper {
                                 }
                             }
                             // 「〃」でない値が見つかった場合はループを抜ける
-                            if (!StringUtils.equals(date, "〃") && !StringUtils.equals(fromTeam, "〃")
-                                    && !StringUtils.equals(toTeam, "〃")) {
+                            if (!Objects.equals(date, "〃") && !Objects.equals(fromTeam, "〃")
+                                    && !Objects.equals(toTeam, "〃")) {
                                 break;
                             }
                         }
