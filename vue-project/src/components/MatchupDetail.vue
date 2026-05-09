@@ -3,7 +3,7 @@
     <!-- ヘッダー -->
     <div class="detail-header">
       <button class="back-button" @click="$emit('close')">← 対戦一覧に戻る</button>
-      <h2 class="detail-title">NPB Matchup Lab</h2>
+      <h2 class="detail-title">{{ info.pitcherNm }} vs {{ info.batterNm }} 対戦成績</h2>
     </div>
 
     <div class="detail-layout">
