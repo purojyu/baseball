@@ -25,7 +25,7 @@ public class PitchResult {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID")
+    @Column(name = "PITCH_ID")
     private Long pitchId;
 
     @Column(name = "AT_BAT_ID", nullable = false)
@@ -40,8 +40,8 @@ public class PitchResult {
     @Column(name = "RESULT", nullable = false)
     private String result;
 
-    @Column(name = "VELOCITY", nullable = false)
-    private Integer velocity;
+    @Column(name = "SPEED", nullable = false)
+    private Integer speed;
     
     @CreationTimestamp                 // 登録時だけ自動セット
     @Column(name = "CREATED_AT", updatable = false)

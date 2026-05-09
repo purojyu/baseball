@@ -10,10 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor  // デフォルトコンストラクターの自動生成
 @AllArgsConstructor // 全フィールドに対する初期化値を引数に取るコンストラクタを自動生成
 public class MatchResult {
-    // 打者ID
-    private Long batterId;
-    // 投手ID
-    private Long pitcherId;
     // 打者
     private String batterNm;
     // 打者のNPB URL

@@ -1,6 +1,7 @@
 package com.example.scraper;
 
-import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -18,11 +19,14 @@ public class NPBWebScraperApplication {
         SpringApplication.run(NPBWebScraperApplication.class, args);
     }
 
-    // 投球コース一括取り込み用（ローカル実行専用）
-    @Bean
-    CommandLineRunner run(YahooPitchScraper yahooScraper) {
-        return args -> {
-            yahooScraper.scrapeRange(LocalDate.of(2026, 3, 27), LocalDate.now().minusDays(1));
-        };
-    }
+    // バッチ一括取り込み用（ローカル実行専用、Lambda起動時には実行しない）
+    // 使用時はコメントアウトを外し、ローカルでNeon DB接続して実行する
+    // @Bean
+    // CommandLineRunner run(NPBWebScraper scraper) {
+    //     return args -> {
+    //         List<String> years = Arrays.asList("2026");
+    //         List<String> months = Arrays.asList("03", "04", "05");
+    //         scraper.scrapeBatch(years, months);
+    //     };
+    // }
 }

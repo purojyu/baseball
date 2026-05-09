@@ -47,7 +47,7 @@ dependencies {
 }
 
 application {
-    mainClassName = 'com.example.scraper.NPBWebScraperApplication'
+    mainClassName = 'com.example.baseball.BaseballApplication'
 }
 
 tasks.named('test') {
