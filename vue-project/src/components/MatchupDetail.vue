@@ -485,7 +485,7 @@ export default {
 
 .batter-silhouette {
   flex: 0 0 auto;
-  width: 64px;
+  width: 100px;
   height: auto;
   opacity: 0.85;
   mix-blend-mode: multiply;
@@ -501,7 +501,7 @@ export default {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 2px;
-  width: 320px;
+  width: 280px;
   flex-shrink: 0;
   border: 2px solid #d1d5db;
   border-radius: 4px;
@@ -510,8 +510,8 @@ export default {
 
 @media (max-width: 640px) {
   .batter-silhouette {
-    width: 40px;
-    opacity: 0.45;
+    width: 70px;
+    opacity: 0.85;
   }
   .course-with-silhouettes {
     gap: 4px;
@@ -519,7 +519,7 @@ export default {
   .course-grid {
     width: auto;
     flex: 1 1 auto;
-    max-width: 320px;
+    max-width: 280px;
   }
 }
 
