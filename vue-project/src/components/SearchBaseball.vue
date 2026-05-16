@@ -224,10 +224,6 @@ export default {
       });
     },
   },
-  mounted() {
-    this.getPitcherList();
-    this.getBatterList();
-  },
   methods: {
     getPitcherList() {
       this.localPitcherList = [];
