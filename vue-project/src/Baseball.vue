@@ -90,6 +90,10 @@ async getInitData() {
       this.years = responseData.years || [];
       this.years.unshift("通算");
     }
+    await Promise.all([
+      this.getPitcherList(0, "通算"),
+      this.getBatterList(0, "通算"),
+    ]);
   } catch (error) {
     if (error.response) {
       alert(error.response.data.message);

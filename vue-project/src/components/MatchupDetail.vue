@@ -85,7 +85,7 @@
       <div class="detail-main">
         <!-- ゾーン別対戦成績 -->
         <div class="course-section">
-          <h3 class="section-title">ゾーン別対戦成績 <span class="section-sub">打者目線 · 5×5コース別打率 (n={{ summary.ab }})</span></h3>
+          <h3 class="section-title">ゾーン別対戦成績 <span class="section-sub">打者目線 · 5×5コース別打率 · 2026年のみ (n={{ summary.ab }})</span></h3>
           <div class="course-with-silhouettes">
             <img v-if="showLeftSilhouette" class="batter-silhouette left" :src="batterImageLeft" alt="" aria-hidden="true">
             <div v-else class="batter-silhouette left placeholder" aria-hidden="true"></div>
