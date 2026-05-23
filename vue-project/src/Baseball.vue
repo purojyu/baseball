@@ -82,7 +82,6 @@ async getInitData() {
   this.isLoading = true;
   try {
     const response = await this.$axios.get("/getInitData");
-    console.log(response);
     if (response.status === 200) {
       // ResponseDto形式に対応
       const responseData = response.data.data;
@@ -90,19 +89,18 @@ async getInitData() {
       this.years = responseData.years || [];
       this.years.unshift("通算");
     }
-    await Promise.all([
-      this.getPitcherList(0, "通算"),
-      this.getBatterList(0, "通算"),
-    ]);
   } catch (error) {
-    if (error.response) {
-      alert(error.response.data.message);
-    } else {
-      alert("初期表示エラー");
-    }
+    console.error("getInitData error:", error);
+    const msg = (error.response && error.response.data && error.response.data.message) || error.message || "初期表示エラー";
+    alert(msg);
+    this.isLoading = false;
+    return;
   } finally {
     this.isLoading = false;
   }
+  // 初期投手・打者リストはbest-effortで取得（ローディングはブロックしない）
+  this.getPitcherList(0, "通算");
+  this.getBatterList(0, "通算");
 },
     async getPitcherList(teamId, year) {
   try {
@@ -114,11 +112,14 @@ async getInitData() {
       this.pitcherList = responseData.pitcherList || [];
     }
   } catch (error) {
-    if (error.response) {
-      alert(error.response.data.message);
-    } else {
-      alert("ピッチャーの取得に失敗しました");
+    console.error("getPitcherList error:", error);
+    this.pitcherList = [];
+    if (error.response && error.response.status === 404) {
+      // データ無しは正常系として扱いアラートは出さない
+      return;
     }
+    const msg = (error.response && error.response.data && error.response.data.message) || error.message || "ピッチャーの取得に失敗しました";
+    alert(msg);
   }
 },
     async getBatterList(teamId, year) {
@@ -131,11 +132,14 @@ async getInitData() {
       this.batterList = responseData.batterList || [];
     }
   } catch (error) {
-    if (error.response) {
-      alert(error.response.data.message);
-    } else {
-      alert("バッターの取得に失敗しました");
+    console.error("getBatterList error:", error);
+    this.batterList = [];
+    if (error.response && error.response.status === 404) {
+      // データ無しは正常系として扱いアラートは出さない
+      return;
     }
+    const msg = (error.response && error.response.data && error.response.data.message) || error.message || "バッターの取得に失敗しました";
+    alert(msg);
   }
 },
    async matchResultSearch(pitcherTeamId, batterTeamId, pitcherId, batterId, selectedYear) {
