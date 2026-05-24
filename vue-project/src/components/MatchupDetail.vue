@@ -94,7 +94,6 @@
             <img v-if="showLeftSilhouette" class="batter-silhouette left" :src="batterImageLeft" alt="" aria-hidden="true">
             <div v-else class="batter-silhouette left placeholder" aria-hidden="true"></div>
             <div class="course-grid-wrapper">
-              <div class="zone-axis-label zone-axis-top">↑ 高め</div>
               <div class="course-grid">
                 <div
                   v-for="zone in courseStats"
@@ -107,7 +106,6 @@
                   <span v-if="zone.ab > 0" class="course-count">{{ zone.h }}/{{ zone.ab }}</span>
                 </div>
               </div>
-              <div class="zone-axis-label zone-axis-bottom">↓ 低め</div>
             </div>
             <img v-if="showRightSilhouette" class="batter-silhouette right" :src="batterImageRight" alt="" aria-hidden="true">
             <div v-else class="batter-silhouette right placeholder" aria-hidden="true"></div>
@@ -586,19 +584,12 @@ export default {
   vertical-align: middle;
 }
 
-/* グリッドを囲う wrapper (上下に高め/低めラベルを置くため) */
+/* グリッドを囲う wrapper */
 .course-grid-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-}
-
-.zone-axis-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #6b7280;
-  letter-spacing: 0.05em;
 }
 
 /* 凡例 */
