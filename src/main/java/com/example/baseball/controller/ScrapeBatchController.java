@@ -1,24 +1,40 @@
 package com.example.baseball.controller;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.scraper.NPBWebScraper;
+import com.example.scraper.YahooPitchScraper;
 
-// Lambda移行後はEventBridge経由で実行するため、このエンドポイントは無効化
-// 手動実行が必要な場合のみコメントアウトを外す（認証なしで公開されるので注意）
-//@RestController
+@RestController
 @RequestMapping("/batch")
 public class ScrapeBatchController {
 
     private final NPBWebScraper npbWebScraper;
+    private final YahooPitchScraper yahooPitchScraper;
 
-    public ScrapeBatchController(NPBWebScraper npbWebScraper) {
+    public ScrapeBatchController(NPBWebScraper npbWebScraper, YahooPitchScraper yahooPitchScraper) {
         this.npbWebScraper = npbWebScraper;
+        this.yahooPitchScraper = yahooPitchScraper;
+    }
+
+    @GetMapping("/runYahooPitchScrape")
+    public String runYahooPitchScrape(
+            @RequestParam String from,
+            @RequestParam String to) {
+        try {
+            yahooPitchScraper.scrapeRange(LocalDate.parse(from), LocalDate.parse(to));
+            return "YahooPitchScrape done. from=" + from + ", to=" + to;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error: " + e.getMessage();
+        }
     }
 
     @GetMapping("/runScrape")

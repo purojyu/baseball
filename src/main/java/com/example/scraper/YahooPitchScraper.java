@@ -81,8 +81,10 @@ public class YahooPitchScraper {
     };
 
     // Sleep intervals (milliseconds)
-    private static final int MIN_REQUEST_INTERVAL = 30000;
-    private static final int MAX_REQUEST_INTERVAL = 30000;
+    // 5秒間隔: Lambda 6並列の各IPはシリアル5秒、長尺試合(116打席)でも 9.7分で完走
+    // 安全マージン: シリアル7.5秒の実証範囲を下回るが、各IP独立なので問題なし
+    private static final int MIN_REQUEST_INTERVAL = 5000;
+    private static final int MAX_REQUEST_INTERVAL = 5000;
     private static final int MIN_GAME_INTERVAL = 15000;
     private static final int MAX_GAME_INTERVAL = 25000;
     private static final int MIN_DAY_INTERVAL = 10000;
@@ -130,9 +132,51 @@ public class YahooPitchScraper {
      * ================================================= */
 
     /**
+     * 1試合分の Yahoo 投球データをスクレイピングする (Lambda 用エントリポイント)。
+     *
+     * Step Functions + Lambda 構成で Map state から並列実行される。
+     * 内部で resolveGameFromYahoo により Yahoo gameId → npb baseball_game を解決し、
+     * at_bat_result 群に紐づく pitch_result を INSERT する。
+     *
+     * @param yahooGameId Yahoo の試合ID（例: "2021038650"）
+     */
+    public void scrapeGameByYahooGameId(String yahooGameId) throws IOException, InterruptedException {
+        if (yahooGameId == null || yahooGameId.isBlank()) {
+            throw new IllegalArgumentException("yahooGameId は必須です");
+        }
+        log.info("Lambda single-game scrape 開始: yahooGameId={}", yahooGameId);
+        scrapeGame(yahooGameId);
+        log.info("Lambda single-game scrape 完了: yahooGameId={}", yahooGameId);
+    }
+
+    /**
+     * 指定日の Yahoo schedule から試合 ID 一覧を取得する (Lambda 用エントリポイント)。
+     *
+     * NPB scrape 後、Step Functions の Map state にこのリストを渡して
+     * 各試合を並列スクレイピングするために使う。
+     *
+     * @param date 取得日
+     * @return Yahoo gameId のリスト
+     */
+    public List<String> fetchYahooGameIdsForDate(LocalDate date) throws IOException {
+        if (date == null) {
+            throw new IllegalArgumentException("date は必須です");
+        }
+        log.info("Yahoo schedule fetch: date={}", date);
+        List<String> ids = new ArrayList<>();
+        ids.addAll(fetchGameIdsByKind(date, LEAGUE_GAMES));
+        ids.addAll(fetchGameIdsByKind(date, INTERLEAGUE_GAMES));
+        // Yahoo schedule は kindIds で filter されず両方で同じ試合を返すため重複排除
+        List<String> distinctIds = ids.stream().distinct().toList();
+        log.info("Yahoo schedule fetch 完了: date={}, raw={}, distinct={}",
+                date, ids.size(), distinctIds.size());
+        return distinctIds;
+    }
+
+    /**
      * 指定された期間のNPB試合データをスクレイピングし、投球結果をデータベースに保存する。
      * レート制限やエラーに対応した安全なスクレイピングを実行。
-     * 
+     *
      * @param from 開始日（含む）
      * @param to   終了日（含む）
      * @throws IllegalArgumentException 日付がnullまたはfrom > toの場合
@@ -190,6 +234,30 @@ public class YahooPitchScraper {
     /* =================================================
      *  SCHEDULE PROCESSING
      * ================================================= */
+
+    /**
+     * 指定日のスケジュールから「試合終了」状態の Yahoo gameId 一覧を取得する（schedule fetch のみ実施）。
+     * scrapeGame を呼ばないので Lambda の schedule fetch step で使える。
+     */
+    private List<String> fetchGameIdsByKind(LocalDate date, String kindIds) throws IOException {
+        safeSleep(MIN_REQUEST_INTERVAL, MAX_REQUEST_INTERVAL);
+        String url = String.format(SCHEDULE_URL, DF.format(date), kindIds);
+        List<String> gameIds = new ArrayList<>();
+        try {
+            Document doc = connectSafely(url);
+            for (Element a : doc.select("a.bb-score__content[href*=/game/]")) {
+                String gameId = a.attr("href").replaceAll(".*/game/(\\d+)/.*", "$1");
+                String stateTxt = connectSafely(String.format(GAME_TOP_URL, gameId))
+                        .selectFirst("p.bb-gameCard__state")
+                        .text();
+                if (!stateTxt.contains("試合終了")) continue;
+                gameIds.add(gameId);
+            }
+        } catch (HttpStatusException e) {
+            log.warn("fetchGameIdsByKind: HTTP {} url={}", e.getStatusCode(), url);
+        }
+        return gameIds;
+    }
 
     private boolean fetchScheduleForKind(LocalDate date, String kindIds) {
         safeSleep(MIN_REQUEST_INTERVAL, MAX_REQUEST_INTERVAL);
@@ -249,6 +317,20 @@ public class YahooPitchScraper {
             return;
         }
 
+        // 既に pitch_result が登録済みの atBat を除外（重複登録防止 + Lambda timeout 後の retry 効率化）
+        List<Long> atBatIds = atBats.stream().map(AtBatResult::getAtBatId).toList();
+        List<Long> processedIds = pitchResultService.findProcessedAtBatIds(atBatIds);
+        if (!processedIds.isEmpty()) {
+            if (processedIds.size() == atBats.size()) {
+                log.info("pitch_result 全登録済みのためスキップ: gameId={}, atBats={}", game.getGameId(), atBats.size());
+                return;
+            }
+            log.info("pitch_result 部分登録済み: gameId={}, atBats={}, processed={}, remaining={}",
+                    game.getGameId(), atBats.size(), processedIds.size(), atBats.size() - processedIds.size());
+            java.util.Set<Long> processedSet = new java.util.HashSet<>(processedIds);
+            atBats.removeIf(ab -> processedSet.contains(ab.getAtBatId()));
+        }
+
         String index = fetchStartIndex(gameId);   // 基本は「0110100」始まり
         
         log.info("index："+ index);
@@ -256,16 +338,19 @@ public class YahooPitchScraper {
         List<PitchResult> prList = new ArrayList<>();
         AtBatResult currentAB = null;
         int pitchCount = 0;
-        
+        // 10打席ごとに saveAll する Lambda timeout 救済策
+        int atBatsSinceLastSave = 0;
+
         // チーム別の最後のバッター情報を管理
         Map<String, AtBatResult> lastBatterByTeam = new HashMap<>();
         
         while (index != null && !atBats.isEmpty()) {
 
+            Document doc = null;
             try {
                 /* ---- 打席ページ取得 ---- */
                 safeSleep(MIN_REQUEST_INTERVAL, MAX_REQUEST_INTERVAL);
-                Document doc = connectSafely(String.format(SCORE_URL, gameId, index));
+                doc = connectSafely(String.format(SCORE_URL, gameId, index));
 
                 long pitId = extractPlayerId(doc, true);
                 long batId = extractPlayerId(doc, false);
@@ -349,21 +434,30 @@ public class YahooPitchScraper {
                         }
                     }
                     // 次の打席に進む（代打交代等は正常な状況のため継続処理）
-                    Document tmp = connectSafely(String.format(SCORE_URL, gameId, index));
-                    index = getNextIndex(tmp);
+                    // 同URLの再 fetch は無駄なので doc を使い回す
+                    index = getNextIndex(doc);
                     continue;
                 }
 
                 /* ---- 投球詳細を保存 ---- */
                 Element section = doc.select("section.bb-splits__item").get(1);
                 prList.addAll(parsePitchRow(section, currentAB.getAtBatId()));
+                atBatsSinceLastSave++;
+
+                // 10打席ごとにチェックポイント保存（Lambda timeout 時の部分救済）
+                if (atBatsSinceLastSave >= 10 && !prList.isEmpty()) {
+                    pitchResultService.saveAll(prList);
+                    log.info("チェックポイント保存: gameId={}, pitches={}件", gameId, prList.size());
+                    prList.clear();
+                    atBatsSinceLastSave = 0;
+                }
 
             } catch (Exception ex) {
                 log.error("scrapeGame error: gameId={}, index={}, pitchCount={}", gameId, index, pitchCount, ex);
                 throw ex;  // 上位のscrapeGameWithRetryでリトライさせる
             }
-            Document tmp = connectSafely(String.format(SCORE_URL, gameId, index));
-            index = getNextIndex(tmp);
+            // 同URLの再 fetch は無駄なので doc を使い回す（速度2倍化）
+            index = getNextIndex(doc);
         }
         
         if (!prList.isEmpty()) pitchResultService.saveAll(prList);
@@ -514,12 +608,22 @@ public class YahooPitchScraper {
 
             int pitchNo   = Integer.parseInt(td.get(1).text());
             String type   = td.get(2).text();
+            if (type != null && type.length() > 50) {
+                log.warn("PITCH_TYPE が50文字超のため truncate: atBatId={}, length={}, original={}", atBatId, type.length(), type);
+                type = type.substring(0, 50);
+            }
 
             Integer spd   = tryParseKm(td.get(3).text());
             if (spd == null) spd = 0;
 
             String result = (td.size() >= 5 ? td.get(4) : td.get(3))
                                 .text().replace("\n", " ").trim();
+            // Yahoo一球速報の結果列に出る [補足情報] は除去
+            result = result.replaceAll("\\s*\\[[^\\]]*\\]\\s*", "").trim();
+            if (result != null && result.length() > 50) {
+                log.warn("PITCH_RESULT result が50文字超のため truncate: atBatId={}, length={}, original={}", atBatId, result.length(), result);
+                result = result.substring(0, 50);
+            }
 
             // コースマップ用の球番号 = 投球テーブルの球番号 - オフセット
             int courseMapPitchNo = pitchNo - pitchOffset;
