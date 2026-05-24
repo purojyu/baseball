@@ -1,0 +1,40 @@
+# Yahoo Pitch Lambda 用 共通イメージ
+# 同じイメージで CMD を変えることで list-games / scrape-one-game を切り替える
+#
+# ビルド: docker build -f Dockerfile.yahoo-lambda --build-arg JAVA_VERSION=17 -t baseball-yahoo-lambda .
+# CMD は Lambda 関数側で上書きする:
+#   list-games          : com.example.scraper.YahooListGamesHandler::handleRequest
+#   scrape-one-game     : com.example.scraper.YahooScrapeOneGameHandler::handleRequest
+
+# ===== Build Stage =====
+ARG JAVA_VERSION
+ARG BUILDPLATFORM
+FROM --platform=$BUILDPLATFORM eclipse-temurin:${JAVA_VERSION}-jdk AS builder
+
+WORKDIR /app
+
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle settings.gradle ./
+
+RUN chmod +x gradlew && ./gradlew dependencies --no-daemon || true
+
+COPY src src
+RUN ./gradlew bootJar --no-daemon
+
+# bootJar を展開（Lambda RIC 用）
+RUN cd /app/build/libs && \
+    JAR_FILE=$(ls *.jar | head -1) && \
+    mkdir -p /app/extracted && \
+    cd /app/extracted && \
+    jar xf /app/build/libs/$JAR_FILE
+
+# ===== Lambda Runtime Stage =====
+FROM public.ecr.aws/lambda/java:17
+
+COPY --from=builder /app/extracted/BOOT-INF/classes/ ${LAMBDA_TASK_ROOT}/
+COPY --from=builder /app/extracted/BOOT-INF/lib/ ${LAMBDA_TASK_ROOT}/lib/
+COPY --from=builder /app/extracted/META-INF/ ${LAMBDA_TASK_ROOT}/META-INF/
+
+# デフォルト CMD は list-games（Terraform で関数ごとに override される）
+CMD ["com.example.scraper.YahooListGamesHandler::handleRequest"]

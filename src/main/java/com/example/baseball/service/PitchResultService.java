@@ -17,4 +17,13 @@ public class PitchResultService {
         return pitchResultRepository.saveAll(pitchResult);
     }
 
+    public long countByAtBatIdIn(List<Long> atBatIds) {
+        if (atBatIds == null || atBatIds.isEmpty()) return 0;
+        return pitchResultRepository.countByAtBatIdIn(atBatIds);
+    }
+
+    public List<Long> findProcessedAtBatIds(List<Long> atBatIds) {
+        if (atBatIds == null || atBatIds.isEmpty()) return List.of();
+        return pitchResultRepository.findProcessedAtBatIds(atBatIds);
+    }
 }
