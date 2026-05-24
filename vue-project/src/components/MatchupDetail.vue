@@ -14,7 +14,11 @@
           <div class="player-card pitcher-card">
             <span class="player-position">P</span>
             <div class="player-info">
-              <a v-if="info.pitcherNpbUrl" :href="info.pitcherNpbUrl" target="_blank" class="player-name">{{ info.pitcherNm }}</a>
+              <router-link
+                v-if="info.pitcherId"
+                :to="`/players/${info.pitcherId}`"
+                class="player-name"
+              >{{ info.pitcherNm }}</router-link>
               <span v-else class="player-name">{{ info.pitcherNm }}</span>
               <span class="player-team">{{ info.pitcherTeamNm }}</span>
             </div>
@@ -22,7 +26,11 @@
           <div class="player-card batter-card">
             <span class="player-position">B</span>
             <div class="player-info">
-              <a v-if="info.batterNpbUrl" :href="info.batterNpbUrl" target="_blank" class="player-name">{{ info.batterNm }}</a>
+              <router-link
+                v-if="info.batterId"
+                :to="`/players/${info.batterId}`"
+                class="player-name"
+              >{{ info.batterNm }}</router-link>
               <span v-else class="player-name">{{ info.batterNm }}</span>
               <span class="player-team">{{ info.batterTeamNm }}</span>
             </div>
@@ -83,47 +91,14 @@
 
       <!-- メインコンテンツ -->
       <div class="detail-main">
-        <!-- ゾーン別対戦成績 -->
-        <div class="course-section">
-          <h3 class="section-title">
-            ゾーン別対戦成績
-            <span class="year-badge">{{ currentYear }}年シーズン</span>
-            <span class="section-sub">打者目線 · n={{ summary.ab }}打席</span>
-          </h3>
-          <div class="course-with-silhouettes">
-            <img v-if="showLeftSilhouette" class="batter-silhouette left" :src="batterImageLeft" alt="" aria-hidden="true">
-            <div v-else class="batter-silhouette left placeholder" aria-hidden="true"></div>
-            <div class="course-grid-wrapper">
-              <div class="zone-axis-label zone-axis-top">↑ 高め</div>
-              <div class="course-grid">
-                <div
-                  v-for="zone in courseStats"
-                  :key="zone.zone"
-                  class="course-cell"
-                  :class="{ 'strike-zone': isStrikeZone(zone.zone), 'ball-zone': !isStrikeZone(zone.zone) }"
-                  :style="{ backgroundColor: getCourseColor(zone.avg), boxShadow: getStrikeZoneShadow(zone.zone) }"
-                >
-                  <span class="course-avg">{{ zone.avg !== null ? formatAvg(zone.avg) : '-' }}</span>
-                  <span v-if="zone.ab > 0" class="course-count">{{ zone.h }}/{{ zone.ab }}</span>
-                </div>
-              </div>
-              <div class="zone-axis-label zone-axis-bottom">↓ 低め</div>
-            </div>
-            <img v-if="showRightSilhouette" class="batter-silhouette right" :src="batterImageRight" alt="" aria-hidden="true">
-            <div v-else class="batter-silhouette right placeholder" aria-hidden="true"></div>
-          </div>
-          <div class="zone-legend">
-            <span class="legend-item">
-              <span class="legend-strike-marker"></span>
-              <span>太い枠の内側 = ストライクゾーン</span>
-            </span>
-            <span class="legend-item">
-              <span class="legend-color legend-color-hot"></span>得意
-              <span class="legend-color legend-color-mid"></span>平均
-              <span class="legend-color legend-color-cold"></span>苦手
-            </span>
-          </div>
-        </div>
+        <!-- ゾーン別対戦成績（共通コンポーネント） -->
+        <ZoneHeatmap
+          title="ゾーン別対戦成績"
+          subtitle="打者目線"
+          :course-stats="courseStats"
+          :sample-size="summary.ab"
+          :batter-handed="info.batterHanded"
+        />
 
         <!-- 球種別 -->
         <div class="pitch-type-section">
@@ -225,11 +200,13 @@
 </template>
 
 <script>
-import batterImageLeft from "@/assets/batter-silhouette-b.png";
-import batterImageRight from "@/assets/batter-silhouette-a.png";
+import ZoneHeatmap from "./ZoneHeatmap.vue";
 
 export default {
   name: "MatchupDetail",
+  components: {
+    ZoneHeatmap,
+  },
   props: {
     detail: {
       type: Object,
@@ -239,8 +216,6 @@ export default {
   data() {
     return {
       showAllLog: false,
-      batterImageLeft,
-      batterImageRight,
     };
   },
   computed: {
@@ -272,18 +247,6 @@ export default {
       if (!this.pitchTypeStats.length) return 1;
       return Math.max(...this.pitchTypeStats.map((pt) => pt.ab));
     },
-    // 打席: "0"=右打, "1"=左打, "2"=両打
-    showLeftSilhouette() {
-      const h = this.info.batterHanded;
-      return h === "1" || h === "2";
-    },
-    showRightSilhouette() {
-      const h = this.info.batterHanded;
-      return h === "0" || h === "2";
-    },
-    currentYear() {
-      return new Date().getFullYear();
-    },
   },
   methods: {
     formatAvg(val) {
@@ -293,31 +256,6 @@ export default {
       if (num === 0) return ".000";
       if (num >= 1) return num.toFixed(3);
       return "." + num.toFixed(3).split(".")[1];
-    },
-    getCourseColor(avg) {
-      if (avg === null || avg === undefined) return "#f5f5f5";
-      const val = Number(avg);
-      if (val >= 0.4) return "rgba(220, 38, 38, 0.5)";
-      if (val >= 0.3) return "rgba(220, 38, 38, 0.3)";
-      if (val >= 0.25) return "rgba(220, 38, 38, 0.15)";
-      if (val >= 0.15) return "rgba(59, 130, 246, 0.1)";
-      if (val >= 0.05) return "rgba(59, 130, 246, 0.25)";
-      return "rgba(59, 130, 246, 0.4)";
-    },
-    isStrikeZone(zone) {
-      const strikeZones = [7, 8, 9, 12, 13, 14, 17, 18, 19];
-      return strikeZones.includes(zone);
-    },
-    // 5x5 のうち中央 3x3 (ストライクゾーン) の外周だけ太枠で囲う
-    getStrikeZoneShadow(zone) {
-      const color = "#1a1a2e";
-      const w = 3;
-      const shadows = [];
-      if ([7, 8, 9].includes(zone)) shadows.push(`inset 0 ${w}px 0 ${color}`);
-      if ([17, 18, 19].includes(zone)) shadows.push(`inset 0 -${w}px 0 ${color}`);
-      if ([7, 12, 17].includes(zone)) shadows.push(`inset ${w}px 0 0 ${color}`);
-      if ([9, 14, 19].includes(zone)) shadows.push(`inset -${w}px 0 0 ${color}`);
-      return shadows.length ? shadows.join(", ") : undefined;
     },
     getPitchTypeBarWidth(ab) {
       return (ab / this.maxPitchTypeAb) * 100;
