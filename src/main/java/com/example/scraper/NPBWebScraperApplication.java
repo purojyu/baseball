@@ -19,10 +19,11 @@ public class NPBWebScraperApplication {
     }
 
     // 投球コース一括取り込み用（ローカル実行専用）
-    @Bean
-    CommandLineRunner run(YahooPitchScraper yahooScraper) {
-        return args -> {
-            yahooScraper.scrapeRange(LocalDate.of(2026, 3, 27), LocalDate.now().minusDays(1));
-        };
-    }
+    // 自動 scrape は無効化。/batch/runYahooPitchScrape エンドポイント経由で手動 fire する。
+    // @Bean
+    // CommandLineRunner run(YahooPitchScraper yahooScraper) {
+    //     return args -> {
+    //         yahooScraper.scrapeRange(LocalDate.of(2026, 3, 27), LocalDate.now().minusDays(1));
+    //     };
+    // }
 }

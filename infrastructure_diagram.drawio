@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-05-23T11:30:00.000Z" agent="Claude Code" version="24.7.0">
+  <diagram id="baseball-aws-arch" name="Baseball-AWS-Architecture">
+    <mxGraphModel dx="2400" dy="1900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- ========== TITLE ========== -->
+        <mxCell id="title" value="Baseball App  AWS Architecture &#x2014; NPB 投手 vs 打者 分析サービス (Account: 833683482148)" style="text;html=1;align=center;verticalAlign=middle;fontSize=20;fontStyle=1;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="450" y="20" width="1500" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="subtitle" value="Source: Terraform (baseball/terraform/*.tf) + AWS API (live verification 2026-05-23)" style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=2;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="450" y="58" width="1500" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== EXTERNAL ACTORS (TOP ROW) ========== -->
+        <mxCell id="users" value="Users&#xa;(Browser)" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#232F3E;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.users;" vertex="1" parent="1">
+          <mxGeometry x="90" y="100" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="cloudflare" value="Cloudflare&#xa;DNS&#xa;(baseball-pitcher-vs-batter.com)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7E6;strokeColor=#F38020;fontColor=#232F3E;fontSize=11;fontStyle=1;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="240" y="100" width="180" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="github" value="GitHub Actions&#xa;(purojyu/baseball)&#xa;CI/CD via OIDC" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F0F0;strokeColor=#24292E;fontColor=#232F3E;fontSize=11;fontStyle=1;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="500" y="100" width="180" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="npbsite" value="NPB 公式サイト&#xa;(npb.jp)&#xa;スクレイピング対象" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE7E7;strokeColor=#C00000;fontColor=#232F3E;fontSize=11;fontStyle=1;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1830" y="100" width="180" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="yahoo" value="Yahoo Sports&#xa;(baseball.yahoo.co.jp)&#xa;一球速報スクレイピング" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E7FF;strokeColor=#7B0099;fontColor=#232F3E;fontSize=11;fontStyle=1;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="2050" y="100" width="180" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== AWS CLOUD CONTAINER ========== -->
+        <mxCell id="awscloud" value="AWS Cloud" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=14;fontStyle=1;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_aws_cloud_alt;strokeColor=#232F3E;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;fontColor=#232F3E;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="220" width="2080" height="1580" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="usEast1" value="us-east-1 (N. Virginia)  &#x2014;  ACM only" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=1;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.region;labelPosition=right;align=left;spacingLeft=15;fontColor=#147EBA;strokeColor=#147EBA;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="270" width="430" height="140" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="acm" value="ACM Certificate&#xa;baseball-pitcher-vs-batter.com&#xa;+ *.baseball-pitcher-vs-batter.com&#xa;(DNS validation / ISSUED)" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#DD344C;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.certificate_manager;" vertex="1" parent="1">
+          <mxGeometry x="160" y="300" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="apne1" value="ap-northeast-1 (Tokyo)  &#x2014;  Primary Region" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=1;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.region;labelPosition=right;align=left;spacingLeft=15;fontColor=#147EBA;strokeColor=#147EBA;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="440" width="2000" height="1340" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="cloudfront" value="CloudFront Distribution&#xa;E14UCKKUNHVA6Q&#xa;d1ky6m4ejmu2cq.cloudfront.net&#xa;Aliases: baseball-pitcher-vs-batter.com, www.&#xa;TLS: ACM (us-east-1) / TLSv1.2_2021&#xa;PriceClass_200 / IPv6 enabled&#xa;Origins: S3-Frontend (OAC) + API Gateway" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#8C4FFF;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudfront;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="500" width="78" height="78" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="rhp" value="Response Headers Policy:&#xa;baseball-security-headers&#xa;HSTS / CSP / X-Frame=DENY&#xa;Referrer-Policy / XSS-Protection&#xa;Permissions-Policy / COOP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E7FF;strokeColor=#8C4FFF;fontColor=#232F3E;fontSize=10;fontStyle=0;verticalAlign=middle;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="800" y="500" width="220" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="behaviors" value="Cache Behaviors:&#xa;&#x2022; Default  S3 (CachingOptimized + SPA fallback 403/404  index.html)&#xa;&#x2022; /baseball/api/*  API Gateway (CachingDisabled, query-strings forwarded)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7E6;strokeColor=#8C4FFF;fontColor=#232F3E;fontSize=10;fontStyle=0;verticalAlign=middle;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1170" y="500" width="350" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="s3frontend" value="S3 (Frontend SPA)&#xa;baseball-frontend-833683482148&#xa;Vue.js 2.6 / Bootstrap Vue&#xa;Public access: BLOCKED&#xa;Access: CloudFront OAC only" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#7AA116;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.simple_storage_service;" vertex="1" parent="1">
+          <mxGeometry x="500" y="720" width="78" height="78" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="apigw" value="API Gateway (HTTP v2)&#xa;baseball-api / id: b1gtp2zmo7&#xa;b1gtp2zmo7.execute-api.ap-northeast-1.amazonaws.com&#xa;Stage: $default (auto_deploy)&#xa;Route: $default  AWS_PROXY  Lambda" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#8C4FFF;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.api_gateway;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="720" width="78" height="78" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="lambdaApi" value="Lambda: baseball-api&#xa;Image (arm64)  /  3008MB  /  60s timeout&#xa;Spring Boot 3.2.5 / Java 17&#xa;ENV: DATABASE_URL_SECRET_NAME, PORT=8080&#xa;Role: baseball-lambda-execution-role" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="720" width="78" height="78" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="secrets" value="Secrets Manager&#xa;baseball/database-url&#xa;(Neon PostgreSQL connection string)" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#DD344C;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.secrets_manager;" vertex="1" parent="1">
+          <mxGeometry x="1750" y="720" width="78" height="78" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="schedgroup" value="EventBridge Scheduler (12 schedules)" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=1;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_security_group;strokeColor=#E7157B;fillColor=#FFF0F5;verticalAlign=top;align=left;spacingLeft=30;fontColor=#E7157B;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="130" y="900" width="380" height="380" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ebWarmup" value="api-warmup &#xd7;10&#xa;cron(0/10 * * * ? *)&#xa;every 10 min: invoke&#xa;GET /baseball/api/warmup" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#E7157B;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.eventbridge;" vertex="1" parent="1">
+          <mxGeometry x="170" y="950" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ebScraper" value="scraper-daily&#xa;cron(0 10 * * ? *) JST&#xa;daily 10:00  NPB scraper" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#E7157B;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.eventbridge;" vertex="1" parent="1">
+          <mxGeometry x="170" y="1080" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ebYahoo" value="yahoo-pitch-daily&#xa;cron(30 10 * * ? *) JST&#xa;daily 10:30  Step Functions" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#E7157B;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.eventbridge;" vertex="1" parent="1">
+          <mxGeometry x="170" y="1200" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="schedRole" value="IAM Role:&#xa;baseball-scheduler-role&#xa;(lambda:InvokeFunction,&#xa;states:StartExecution)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE7E7;strokeColor=#DD344C;fontColor=#232F3E;fontSize=9;fontStyle=0;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="340" y="1100" width="150" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sfgroup" value="Step Functions: baseball-yahoo-pitch-pipeline (STANDARD)" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=1;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_security_group;strokeColor=#ED7100;fillColor=#FFF7E6;verticalAlign=top;align=left;spacingLeft=30;fontColor=#ED7100;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="560" y="900" width="780" height="380" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sfMain" value="State Machine&#xa;baseball-yahoo-pitch-pipeline" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.step_functions;" vertex="1" parent="1">
+          <mxGeometry x="600" y="950" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sfState1" value="1. ListTargetGames&#xa;(Task: Lambda invoke)&#xa;Retry: 2x, 30s, ×2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontColor=#232F3E;fontSize=9;fontStyle=0;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="700" y="950" width="140" height="55" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sfState2" value="2. CheckGameCount&#xa;(Choice)&#xa;games[0] present?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontColor=#232F3E;fontSize=9;fontStyle=0;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="860" y="945" width="140" height="65" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sfStateNoGames" value="NoGames&#xa;(Pass  End)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontColor=#232F3E;fontSize=9;fontStyle=0;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="950" width="100" height="55" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sfState3" value="3. ProcessGames (Map)&#xa;MaxConcurrency = 6&#xa;Iterator  ScrapeOneGame" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontColor=#232F3E;fontSize=9;fontStyle=0;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="950" width="170" height="55" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="lambdaYahooList" value="Lambda&#xa;baseball-yahoo-list-games&#xa;Image(arm64) 1024MB / 300s&#xa;Handler: YahooListGamesHandler" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=9;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;" vertex="1" parent="1">
+          <mxGeometry x="730" y="1130" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="lambdaYahooScrape" value="Lambda&#xa;baseball-yahoo-scrape-one-game&#xa;Image(arm64) 1024MB / 900s&#xa;Handler: YahooScrapeOneGameHandler&#xa;Retry: 3x, 60s, ×2 + Catch" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=9;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="1130" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sfRole" value="IAM Role:&#xa;baseball-yahoo-state-machine-role&#xa;(lambda:Invoke + logs:*)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE7E7;strokeColor=#DD344C;fontColor=#232F3E;fontSize=9;fontStyle=0;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="580" y="1220" width="200" height="45" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="lambdaScraper" value="Lambda: baseball-scraper&#xa;Image (arm64) / 1024MB / 900s&#xa;ENV: SPRING_PROFILES_ACTIVE=prod&#xa;Jsoup HTML scraping (NPB公式)" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="950" width="78" height="78" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ecrgroup" value="ECR Repositories (image_tag_mutability=MUTABLE, scan_on_push, keep last 5)" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=1;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_security_group;strokeColor=#ED7100;fillColor=#FFF7E6;verticalAlign=top;align=left;spacingLeft=30;fontColor=#ED7100;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="130" y="1340" width="780" height="170" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ecrApi" value="ECR: baseball-api&#xa;833683482148.dkr.ecr&#xa;.ap-northeast-1.amazonaws.com&#xa;/baseball-api:latest" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=9;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.elastic_container_registry;" vertex="1" parent="1">
+          <mxGeometry x="190" y="1380" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ecrScraper" value="ECR: baseball-scraper&#xa;.../baseball-scraper:latest" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=9;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.elastic_container_registry;" vertex="1" parent="1">
+          <mxGeometry x="450" y="1380" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ecrYahoo" value="ECR: baseball-yahoo-lambda&#xa;.../baseball-yahoo-lambda:latest&#xa;(shared by 2 Yahoo Lambdas)" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=9;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.elastic_container_registry;" vertex="1" parent="1">
+          <mxGeometry x="730" y="1380" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="cwgroup" value="CloudWatch Logs (5 log groups)" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=1;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_security_group;strokeColor=#E7157B;fillColor=#FFF0F5;verticalAlign=top;align=left;spacingLeft=30;fontColor=#E7157B;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="950" y="1340" width="640" height="170" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="cwLogs" value="CloudWatch Logs" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#E7157B;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudwatch_2;" vertex="1" parent="1">
+          <mxGeometry x="990" y="1380" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="cwList" value="/aws/lambda/baseball-api  (30d)&#xa;/aws/lambda/baseball-scraper  (30d)&#xa;/aws/lambda/baseball-yahoo-list-games  (14d)&#xa;/aws/lambda/baseball-yahoo-scrape-one-game  (14d)&#xa;/aws/vendedlogs/states/baseball-yahoo-pitch-pipeline  (14d)&#xa;( /aws/lambda/baseball-ip-check  ※Terraform外 )" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6F2;strokeColor=#E7157B;fontColor=#232F3E;fontSize=9;fontStyle=0;verticalAlign=middle;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="1370" width="490" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="iamgroup" value="IAM" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=1;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_security_group;strokeColor=#DD344C;fillColor=#FFE7E7;verticalAlign=top;align=left;spacingLeft=30;fontColor=#DD344C;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="1630" y="1340" width="430" height="170" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="iam" value="IAM (4 roles + OIDC)" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#DD344C;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.identity_and_access_management;" vertex="1" parent="1">
+          <mxGeometry x="1670" y="1380" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="iamList" value="&#x2022; baseball-lambda-execution-role&#xa;&#x2022; baseball-scheduler-role&#xa;&#x2022; baseball-yahoo-state-machine-role&#xa;&#x2022; baseball-github-actions-role (OIDC)&#xa;OIDC provider:&#xa;token.actions.githubusercontent.com" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFD6D6;strokeColor=#DD344C;fontColor=#232F3E;fontSize=9;fontStyle=0;verticalAlign=middle;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1760" y="1370" width="280" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="legend" value="Legend&#xa;&#x2014;&#x2014;&#x2014;&#xa;Solid blue: HTTPS request flow&#xa;Solid orange: Lambda invocation&#xa;Dashed red: TLS/Secret/IAM&#xa;Dotted gray: CI/CD deploy&#xa;Dotted pink: Logs delivery&#xa;Solid green: Scraping (external)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8F8F8;strokeColor=#999999;fontColor=#232F3E;fontSize=10;fontStyle=0;verticalAlign=top;align=left;spacingLeft=10;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="130" y="1540" width="260" height="180" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="notes" value="主要設計ポイント&#xa;&#x2014;&#x2014;&#x2014;&#xa;&#x2022; サーバレス構成: ALB/EC2 不要、コスト最小化&#xa;&#x2022; Cold Start対策: warmup ×10 が10分毎にAPI Lambdaを5並列keepwarm (frontend並列API用)&#xa;&#x2022; SPA fallback: CloudFront 403/404  /index.html (Vue.js Router対応)&#xa;&#x2022; OAC でS3直アクセス遮断（CloudFront経由のみ）&#xa;&#x2022; DBはNeon (外部, ap-southeast-1) で固定IP不要、Secrets経由で接続&#xa;&#x2022; Step Functions Map MaxConcurrency=6 で並列スクレイピング, Retry+Catchで耐障害&#xa;&#x2022; GitHub Actions  OIDC AssumeRole (静的キー不要)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F8FF;strokeColor=#147EBA;fontColor=#232F3E;fontSize=10;fontStyle=0;verticalAlign=top;align=left;spacingLeft=10;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="410" y="1540" width="720" height="180" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="tech" value="Tech Stack&#xa;&#x2014;&#x2014;&#x2014;&#xa;Backend:  Spring Boot 3.2.5 / Java 17 / Gradle / Spring Data JPA / Jsoup&#xa;Frontend: Vue.js 2.6 / Bootstrap Vue / Axios / Vue-Multiselect&#xa;Database: Neon PostgreSQL (外部)&#xa;Container: ECR (arm64 Image)&#xa;CI/CD:    GitHub Actions + OIDC AssumeRole&#xa;Domain:   baseball-pitcher-vs-batter.com (Cloudflare DNS)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E6;strokeColor=#D79B00;fontColor=#232F3E;fontSize=10;fontStyle=0;verticalAlign=top;align=left;spacingLeft=10;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="1540" width="540" height="180" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="neon" value="Neon PostgreSQL&#xa;(External SaaS / ap-southeast-1)&#xa;ep-tiny-feather-a1urzw6k-pooler&#xa;.ap-southeast-1.aws.neon.tech&#xa;sslmode=require&#xa;channel_binding=require" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#C925D1;strokeColor=#7B1FA2;fontColor=#FFFFFF;fontSize=11;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="2160" y="710" width="180" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="neonLabel" value="External&#xa;(Outside AWS)" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fontStyle=2;fontColor=#7B1FA2;" vertex="1" parent="1">
+          <mxGeometry x="2160" y="840" width="180" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== EDGES ========== -->
+        <mxCell id="e1" style="endArrow=classic;html=1;rounded=0;strokeColor=#147EBA;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="users" target="cloudflare">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1label" value="HTTPS&#xa;DNS lookup" style="text;html=1;align=center;fontSize=9;fontColor=#147EBA;" vertex="1" parent="1">
+          <mxGeometry x="160" y="125" width="80" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e2" style="endArrow=classic;html=1;rounded=0;strokeColor=#147EBA;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="cloudflare" target="cloudfront">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="330" y="320"/>
+              <mxPoint x="1089" y="320"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e2label" value="CNAME  d1ky6m4ejmu2cq.cloudfront.net" style="text;html=1;align=center;fontSize=9;fontColor=#147EBA;" vertex="1" parent="1">
+          <mxGeometry x="500" y="300" width="280" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e3" style="endArrow=classic;html=1;rounded=0;strokeColor=#DD344C;strokeWidth=2;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="acm" target="cloudfront">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3label" value="TLS Cert&#xa;(ARN, us-east-1)" style="text;html=1;align=center;fontSize=9;fontColor=#DD344C;" vertex="1" parent="1">
+          <mxGeometry x="620" y="420" width="120" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e4" style="endArrow=classic;html=1;rounded=0;strokeColor=#7AA116;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="cloudfront" target="s3frontend">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1089" y="650"/>
+              <mxPoint x="539" y="650"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e4label" value="default behavior&#xa;(SPA static)&#xa;OAC  s3:GetObject" style="text;html=1;align=center;fontSize=9;fontColor=#7AA116;" vertex="1" parent="1">
+          <mxGeometry x="730" y="620" width="160" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e5" style="endArrow=classic;html=1;rounded=0;strokeColor=#8C4FFF;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="cloudfront" target="apigw">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e5label" value="/baseball/api/*&#xa;(no cache, https-only)" style="text;html=1;align=center;fontSize=9;fontColor=#8C4FFF;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="640" width="160" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e6" style="endArrow=classic;html=1;rounded=0;strokeColor=#ED7100;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="apigw" target="lambdaApi">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e6label" value="AWS_PROXY&#xa;(v2.0 payload)" style="text;html=1;align=center;fontSize=9;fontColor=#ED7100;" vertex="1" parent="1">
+          <mxGeometry x="1170" y="780" width="140" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e7" style="endArrow=classic;html=1;rounded=0;strokeColor=#DD344C;strokeWidth=2;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="lambdaApi" target="secrets">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e7label" value="GetSecretValue&#xa;(database-url)" style="text;html=1;align=center;fontSize=9;fontColor=#DD344C;" vertex="1" parent="1">
+          <mxGeometry x="1570" y="780" width="120" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e8" style="endArrow=classic;html=1;rounded=0;strokeColor=#C925D1;strokeWidth=2;exitX=1;exitY=0.7;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="lambdaApi" target="neon">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e8label" value="JDBC / Postgres&#xa;sslmode=require" style="text;html=1;align=center;fontSize=9;fontColor=#C925D1;" vertex="1" parent="1">
+          <mxGeometry x="1900" y="755" width="160" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e9" style="endArrow=classic;html=1;rounded=0;strokeColor=#E7157B;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="ebWarmup" target="lambdaApi">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600" y="980"/>
+              <mxPoint x="1300" y="980"/>
+              <mxPoint x="1300" y="800"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e9label" value="invoke /warmup&#xa;(10 parallel  keep warm)" style="text;html=1;align=center;fontSize=9;fontColor=#E7157B;" vertex="1" parent="1">
+          <mxGeometry x="950" y="855" width="200" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e10" style="endArrow=classic;html=1;rounded=0;strokeColor=#E7157B;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="ebScraper" target="lambdaScraper">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e10label" value="invoke (daily 10:00 JST)" style="text;html=1;align=center;fontSize=9;fontColor=#E7157B;" vertex="1" parent="1">
+          <mxGeometry x="1170" y="1085" width="200" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e11" style="endArrow=classic;html=1;rounded=0;strokeColor=#E7157B;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="ebYahoo" target="sfMain">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="450" y="1230"/>
+              <mxPoint x="450" y="980"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e11label" value="StartExecution&#xa;(daily 10:30 JST)" style="text;html=1;align=center;fontSize=9;fontColor=#E7157B;" vertex="1" parent="1">
+          <mxGeometry x="455" y="1050" width="120" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="esf1" style="endArrow=classic;html=1;rounded=0;strokeColor=#D79B00;strokeWidth=1.5;" edge="1" parent="1" source="sfMain" target="sfState1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="esf2" style="endArrow=classic;html=1;rounded=0;strokeColor=#D79B00;strokeWidth=1.5;" edge="1" parent="1" source="sfState1" target="sfState2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="esf3" style="endArrow=classic;html=1;rounded=0;strokeColor=#D79B00;strokeWidth=1.5;" edge="1" parent="1" source="sfState2" target="sfStateNoGames">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="esf3l" value="no games" style="text;html=1;align=center;fontSize=9;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="935" width="60" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="esf4" style="endArrow=classic;html=1;rounded=0;strokeColor=#D79B00;strokeWidth=1.5;" edge="1" parent="1" source="sfState2" target="sfState3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="930" y="1020"/>
+              <mxPoint x="1140" y="1020"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="esf4l" value="games[0] present" style="text;html=1;align=center;fontSize=9;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="965" y="1025" width="120" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="esfL1" style="endArrow=classic;html=1;rounded=0;strokeColor=#ED7100;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="sfState1" target="lambdaYahooList">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="esfL1l" value="lambda:invoke" style="text;html=1;align=center;fontSize=9;fontColor=#ED7100;" vertex="1" parent="1">
+          <mxGeometry x="690" y="1060" width="100" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="esfL2" style="endArrow=classic;html=1;rounded=0;strokeColor=#ED7100;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="sfState3" target="lambdaYahooScrape">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="esfL2l" value="Map iterator&#xa;(parallel ×6)" style="text;html=1;align=center;fontSize=9;fontColor=#ED7100;" vertex="1" parent="1">
+          <mxGeometry x="1265" y="1055" width="100" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="eScrapeNpb" style="endArrow=classic;html=1;rounded=0;strokeColor=#7AA116;strokeWidth=2;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="lambdaScraper" target="npbsite">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1489" y="280"/>
+              <mxPoint x="1920" y="280"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eScrapeNpbL" value="HTTPS scrape&#xa;(Jsoup)" style="text;html=1;align=center;fontSize=9;fontColor=#7AA116;" vertex="1" parent="1">
+          <mxGeometry x="1500" y="265" width="120" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="eYahooSrc" style="endArrow=classic;html=1;rounded=0;strokeColor=#7AA116;strokeWidth=2;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="lambdaYahooScrape" target="yahoo">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1230" y="280"/>
+              <mxPoint x="2140" y="280"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eYahooSrcL" value="HTTPS scrape&#xa;一球速報 1試合分" style="text;html=1;align=center;fontSize=9;fontColor=#7AA116;" vertex="1" parent="1">
+          <mxGeometry x="1500" y="240" width="120" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="eScraperSec" style="endArrow=classic;html=1;rounded=0;strokeColor=#DD344C;strokeWidth=1.5;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="lambdaScraper" target="secrets">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1789" y="990"/>
+              <mxPoint x="1789" y="850"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eYahooSec" style="endArrow=classic;html=1;rounded=0;strokeColor=#DD344C;strokeWidth=1.5;dashed=1;" edge="1" parent="1" source="lambdaYahooScrape" target="secrets">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1230" y="1050"/>
+              <mxPoint x="1789" y="1050"/>
+              <mxPoint x="1789" y="800"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="eSecNeon" style="endArrow=classic;html=1;rounded=0;strokeColor=#C925D1;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.2;entryDx=0;entryDy=0;" edge="1" parent="1" source="secrets" target="neon">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="eSecNeonL" value="connection string&#xa;(取得後 Lambda が接続)" style="text;html=1;align=center;fontSize=9;fontColor=#C925D1;" vertex="1" parent="1">
+          <mxGeometry x="1900" y="700" width="200" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="eEcrApi" style="endArrow=classic;html=1;rounded=0;strokeColor=#999999;strokeWidth=1.5;dashed=8 4;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="ecrApi" target="lambdaApi">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="220" y="1340"/>
+              <mxPoint x="220" y="860"/>
+              <mxPoint x="1489" y="860"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eEcrApiL" value="image:latest" style="text;html=1;align=center;fontSize=9;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="220" y="845" width="100" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="eEcrScraper" style="endArrow=classic;html=1;rounded=0;strokeColor=#999999;strokeWidth=1.5;dashed=8 4;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="ecrScraper" target="lambdaScraper">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="480" y="1330"/>
+              <mxPoint x="480" y="1280"/>
+              <mxPoint x="1489" y="1280"/>
+              <mxPoint x="1489" y="1040"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="eEcrYahoo1" style="endArrow=classic;html=1;rounded=0;strokeColor=#999999;strokeWidth=1.5;dashed=8 4;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="ecrYahoo" target="lambdaYahooList">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="760" y="1300"/>
+              <mxPoint x="760" y="1210"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eEcrYahoo2" style="endArrow=classic;html=1;rounded=0;strokeColor=#999999;strokeWidth=1.5;dashed=8 4;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="ecrYahoo" target="lambdaYahooScrape">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="790" y="1320"/>
+              <mxPoint x="1230" y="1320"/>
+              <mxPoint x="1230" y="1210"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="eGhDeploy" style="endArrow=classic;html=1;rounded=0;strokeColor=#666666;strokeWidth=2;dashed=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="github" target="iam">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="590" y="200"/>
+              <mxPoint x="590" y="1280"/>
+              <mxPoint x="1700" y="1280"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eGhDeployL" value="AssumeRoleWithWebIdentity&#xa;(OIDC)  ECR push / Lambda update&#xa;S3 deploy / CloudFront invalidate" style="text;html=1;align=center;fontSize=9;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="600" y="195" width="260" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="eLogApi" style="endArrow=classic;html=1;rounded=0;strokeColor=#E7157B;strokeWidth=1.5;dashed=2 4;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="lambdaApi" target="cwLogs">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="eLogScraper" style="endArrow=classic;html=1;rounded=0;strokeColor=#E7157B;strokeWidth=1.5;dashed=2 4;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="lambdaScraper" target="cwLogs">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="eLogYahoo1" style="endArrow=classic;html=1;rounded=0;strokeColor=#E7157B;strokeWidth=1.5;dashed=2 4;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="lambdaYahooList" target="cwLogs">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="eLogYahoo2" style="endArrow=classic;html=1;rounded=0;strokeColor=#E7157B;strokeWidth=1.5;dashed=2 4;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="lambdaYahooScrape" target="cwLogs">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="eLogSF" style="endArrow=classic;html=1;rounded=0;strokeColor=#E7157B;strokeWidth=1.5;dashed=2 4;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="sfMain" target="cwLogs">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="eLogsLabel" value="logs delivery" style="text;html=1;align=center;fontSize=9;fontColor=#E7157B;" vertex="1" parent="1">
+          <mxGeometry x="990" y="1310" width="100" height="20" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
