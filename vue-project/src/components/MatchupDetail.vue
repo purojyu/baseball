@@ -85,24 +85,43 @@
       <div class="detail-main">
         <!-- ゾーン別対戦成績 -->
         <div class="course-section">
-          <h3 class="section-title">ゾーン別対戦成績 <span class="section-sub">打者目線 · 5×5コース別打率 · 2026年のみ (n={{ summary.ab }})</span></h3>
+          <h3 class="section-title">
+            ゾーン別対戦成績
+            <span class="year-badge">{{ currentYear }}年シーズン</span>
+            <span class="section-sub">打者目線 · n={{ summary.ab }}打席</span>
+          </h3>
           <div class="course-with-silhouettes">
             <img v-if="showLeftSilhouette" class="batter-silhouette left" :src="batterImageLeft" alt="" aria-hidden="true">
             <div v-else class="batter-silhouette left placeholder" aria-hidden="true"></div>
-            <div class="course-grid">
-              <div
-                v-for="zone in courseStats"
-                :key="zone.zone"
-                class="course-cell"
-                :style="{ backgroundColor: getCourseColor(zone.avg) }"
-                :class="{ 'strike-zone': isStrikeZone(zone.zone) }"
-              >
-                <span class="course-avg">{{ zone.avg !== null ? formatAvg(zone.avg) : '-' }}</span>
-                <span v-if="zone.ab > 0" class="course-count">{{ zone.h }}/{{ zone.ab }}</span>
+            <div class="course-grid-wrapper">
+              <div class="zone-axis-label zone-axis-top">↑ 高め</div>
+              <div class="course-grid">
+                <div
+                  v-for="zone in courseStats"
+                  :key="zone.zone"
+                  class="course-cell"
+                  :class="{ 'strike-zone': isStrikeZone(zone.zone), 'ball-zone': !isStrikeZone(zone.zone) }"
+                  :style="{ backgroundColor: getCourseColor(zone.avg), boxShadow: getStrikeZoneShadow(zone.zone) }"
+                >
+                  <span class="course-avg">{{ zone.avg !== null ? formatAvg(zone.avg) : '-' }}</span>
+                  <span v-if="zone.ab > 0" class="course-count">{{ zone.h }}/{{ zone.ab }}</span>
+                </div>
               </div>
+              <div class="zone-axis-label zone-axis-bottom">↓ 低め</div>
             </div>
             <img v-if="showRightSilhouette" class="batter-silhouette right" :src="batterImageRight" alt="" aria-hidden="true">
             <div v-else class="batter-silhouette right placeholder" aria-hidden="true"></div>
+          </div>
+          <div class="zone-legend">
+            <span class="legend-item">
+              <span class="legend-strike-marker"></span>
+              <span>太い枠の内側 = ストライクゾーン</span>
+            </span>
+            <span class="legend-item">
+              <span class="legend-color legend-color-hot"></span>得意
+              <span class="legend-color legend-color-mid"></span>平均
+              <span class="legend-color legend-color-cold"></span>苦手
+            </span>
           </div>
         </div>
 
@@ -262,6 +281,9 @@ export default {
       const h = this.info.batterHanded;
       return h === "0" || h === "2";
     },
+    currentYear() {
+      return new Date().getFullYear();
+    },
   },
   methods: {
     formatAvg(val) {
@@ -285,6 +307,17 @@ export default {
     isStrikeZone(zone) {
       const strikeZones = [7, 8, 9, 12, 13, 14, 17, 18, 19];
       return strikeZones.includes(zone);
+    },
+    // 5x5 のうち中央 3x3 (ストライクゾーン) の外周だけ太枠で囲う
+    getStrikeZoneShadow(zone) {
+      const color = "#1a1a2e";
+      const w = 3;
+      const shadows = [];
+      if ([7, 8, 9].includes(zone)) shadows.push(`inset 0 ${w}px 0 ${color}`);
+      if ([17, 18, 19].includes(zone)) shadows.push(`inset 0 -${w}px 0 ${color}`);
+      if ([7, 12, 17].includes(zone)) shadows.push(`inset ${w}px 0 0 ${color}`);
+      if ([9, 14, 19].includes(zone)) shadows.push(`inset -${w}px 0 0 ${color}`);
+      return shadows.length ? shadows.join(", ") : undefined;
     },
     getPitchTypeBarWidth(ab) {
       return (ab / this.maxPitchTypeAb) * 100;
@@ -533,8 +566,86 @@ export default {
   transition: background-color 0.2s;
 }
 
-.course-cell.strike-zone {
-  border: 1px solid rgba(0, 0, 0, 0.08);
+.course-cell.ball-zone {
+  /* ボールゾーンはわずかに彩度を落として、ストライクとの差を出す */
+  filter: saturate(0.75);
+}
+
+/* 年度バッジ (例: 2026年シーズン) */
+.year-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  margin: 0 6px 0 4px;
+  background: #2563eb;
+  color: #ffffff;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  vertical-align: middle;
+}
+
+/* グリッドを囲う wrapper (上下に高め/低めラベルを置くため) */
+.course-grid-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.zone-axis-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  letter-spacing: 0.05em;
+}
+
+/* 凡例 */
+.zone-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 10px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #4b5563;
+  background: #f9fafb;
+  border-radius: 6px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-strike-marker {
+  display: inline-block;
+  width: 18px;
+  height: 14px;
+  border: 3px solid #1a1a2e;
+  border-radius: 2px;
+  background: #ffffff;
+}
+
+.legend-color {
+  display: inline-block;
+  width: 18px;
+  height: 14px;
+  border-radius: 2px;
+  border: 1px solid #d1d5db;
+}
+
+.legend-color-hot {
+  background: rgba(220, 38, 38, 0.4);
+}
+.legend-color-mid {
+  background: rgba(220, 38, 38, 0.15);
+}
+.legend-color-cold {
+  background: rgba(59, 130, 246, 0.4);
 }
 
 .course-avg {
