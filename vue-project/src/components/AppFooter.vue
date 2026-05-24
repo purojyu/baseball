@@ -7,6 +7,9 @@
         <p>
           <a href="https://npb.jp/" target="_blank" rel="noopener noreferrer">日本野球機構（NPB）</a>
         </p>
+        <p>
+          <a href="https://baseball.yahoo.co.jp/" target="_blank" rel="noopener noreferrer">Yahoo!スポーツ・プロ野球</a>
+        </p>
       </div>
       <div class="disclaimer">
         <h2 class="footer-heading disclaimer-heading">利用責任</h2>
