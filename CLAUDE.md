@@ -85,3 +85,30 @@
 - **シンプル第一**：すべての変更をできる限りシンプルにする。影響するコードを最小限にする。
 - **手を抜かない**：根本原因を見つける。一時的な修正は避ける。シニアエンジニアの水準を保つ。
 - **影響を最小化する**：変更は必要な箇所のみにとどめる。バグを新たに引き込まない。
+
+---
+
+## 🚨 デプロイ規約
+
+**Lambda image の手動デプロイは禁止。**
+
+`docker build` → `ECR push` → `aws lambda update-function-code` を**手動で実行してはいけない**。
+必ず以下のフローを経由する:
+
+```
+ブランチ → コード修正 → PR → main マージ → GitHub Actions deploy-*.yml が自動デプロイ
+```
+
+理由:
+- 手動デプロイすると git ソースと実行 Lambda image が乖離する（「動いてるコード」が main に存在しない状態）
+- 次に他人が main を更新して CI/CD が走った瞬間、古い main コードが image に上書きされて修正が消える
+- 障害時に「実際に動いてるコード」を追えなくなる
+
+例外（緊急時の手動デプロイ）でも、確認後すぐに同じコードで PR を上げて main を追従させること。
+
+該当する GitHub Actions:
+- `.github/workflows/deploy-api.yml` — baseball-api Lambda
+- `.github/workflows/deploy-scraper.yml` — baseball-scraper Lambda（NPB / Yahoo Lambda 含む）
+- `.github/workflows/deploy-frontend.yml` — S3 + CloudFront
+
+同様に **terraform apply も plan を必ず確認してからユーザー承認を得る**こと。

@@ -135,31 +135,33 @@ java -jar build/libs/baseball-0.0.1-SNAPSHOT.jar \
 | `deploy-scraper.yml` | `src/**`, `build.gradle`, `Dockerfile.scraper` | baseball-scraper Lambda |
 | `deploy-frontend.yml` | `vue-project/**` | S3 + CloudFront invalidate |
 
-### 手動デプロイ
+### 🚨 手動デプロイは禁止
 
+**Lambda image を手動で `docker build` → `ECR push` → `aws lambda update-function-code` するのは禁止。**
+
+必ず `main` ブランチへの PR マージ経由で GitHub Actions にデプロイさせる。
+
+理由:
+- 手動デプロイすると git 上のソースと実行 Lambda image が乖離する（「動いてるコード」が main に存在しない状態）
+- 次に他人が main を更新して CI/CD が走った瞬間、古い main コードが image に上書きされて修正が消える
+- 障害時に「実際に動いてるコード」を追えなくなる
+
+正しい手順:
 ```bash
-# Lambda image (例: Yahoo Lambda)
-aws ecr get-login-password --region ap-northeast-1 | \
-  docker login --username AWS --password-stdin \
-  833683482148.dkr.ecr.ap-northeast-1.amazonaws.com
+# 1. ブランチを切る
+git checkout -b feat/your-change
 
-docker buildx build \
-  --platform linux/arm64 \
-  --provenance=false \
-  --output type=image,oci-mediatypes=false,push=true \
-  -f Dockerfile.yahoo-lambda \
-  --build-arg JAVA_VERSION=17 \
-  --build-arg BUILDPLATFORM=linux/arm64 \
-  -t 833683482148.dkr.ecr.ap-northeast-1.amazonaws.com/baseball-yahoo-lambda:latest \
-  .
+# 2. コード修正・コミット
+git add . && git commit -m "..."
 
-aws lambda update-function-code \
-  --function-name baseball-yahoo-list-games \
-  --image-uri 833683482148.dkr.ecr.ap-northeast-1.amazonaws.com/baseball-yahoo-lambda:latest
+# 3. push & PR 作成
+git push -u origin feat/your-change
+gh pr create
+
+# 4. main へマージ → GitHub Actions が自動デプロイ
 ```
 
-> ⚠️ Docker buildx は default で OCI manifest を吐く。Lambda は Docker v2 schema 2 のみ対応のため
-> `--provenance=false --output type=image,oci-mediatypes=false,push=true` を必ず指定する。
+緊急時で例外的に手動デプロイが必要な場合も、確認後すぐに同じコードで PR を上げて main を追従させる。
 
 ### Terraform 適用
 
