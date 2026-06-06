@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1>プロ野球 個人対戦成績 検索</h1>
+    <h1>プロ野球 対戦成績検索｜投手VS打者</h1>
     <b-row class="mt-4 align-items-center">
       <b-col cols="4">
         <label class="header_font text-right pitcher-label">投手</label>
