@@ -235,13 +235,6 @@ export default {
   gap: 4px;
 }
 
-.zone-axis-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #6b7280;
-  letter-spacing: 0.05em;
-}
-
 .course-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
