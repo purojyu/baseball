@@ -103,6 +103,12 @@ public class PlayerProfileService {
         courseSampleSize.put("vsLeft", BaseballUtil.calculateStrokesNumber(vsLeft));
         profile.put("courseSampleSize", courseSampleSize);
 
+        // 追加: 年度別成績は通算（全年度）で算出して上書き（コース別/SUMMARYは当年のまま）
+        List<VAtBatGameDetails> allResults = isPitcher
+                ? vAtBatGameDetailsRepository.findByBatterAndPitcher(0L, 0L, playerId, null, "通算")
+                : vAtBatGameDetailsRepository.findByBatterAndPitcher(0L, 0L, null, playerId, "通算");
+        profile.put("yearlyStats", pitchDetailService.buildYearlyStatsForAtBats(allResults));
+
         // 追加: 対戦相手TOP/WORST
         profile.put("topOpponents", buildOpponents(atBatResults, isPitcher, true));
         profile.put("worstOpponents", buildOpponents(atBatResults, isPitcher, false));

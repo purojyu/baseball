@@ -103,6 +103,14 @@ public class PitchDetailService {
     }
 
     /**
+     * 任意の打席集合から年度別成績だけを算出する公開ヘルパ。
+     * 選手プロフィールで「コース別/SUMMARYは当年・年度別は通算」を実現するために使う。
+     */
+    public List<Map<String, Object>> buildYearlyStatsForAtBats(List<VAtBatGameDetails> atBatResults) {
+        return buildYearlyStats(atBatResults);
+    }
+
+    /**
      * SUMMARY: 打席数、打数、安打、打率、OPS等
      */
     private Map<String, Object> buildSummary(List<VAtBatGameDetails> atBatResults) {
