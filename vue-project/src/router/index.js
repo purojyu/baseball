@@ -1,12 +1,10 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
+import HomeView from "../views/HomeView.vue";
+import PlayerProfileView from "../views/PlayerProfileView.vue";
+import MatchupDetailView from "../views/MatchupDetailView.vue";
 
 Vue.use(VueRouter);
-
-// ルートコンポーネントは遅延ロード（初期バンドル軽量化）
-const HomeView = () => import(/* webpackChunkName: "home" */ "../views/HomeView.vue");
-const PlayerProfileView = () =>
-  import(/* webpackChunkName: "player" */ "../views/PlayerProfileView.vue");
 
 const routes = [
   {
@@ -18,6 +16,12 @@ const routes = [
     path: "/players/:playerId",
     name: "player",
     component: PlayerProfileView,
+    props: true,
+  },
+  {
+    path: "/matchup/:pitcherId/:batterId",
+    name: "matchup",
+    component: MatchupDetailView,
     props: true,
   },
   // 不正なURLはトップへ

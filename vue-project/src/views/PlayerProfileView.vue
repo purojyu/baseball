@@ -124,12 +124,26 @@
 
         <!-- メイン -->
         <div class="profile-main">
-          <!-- ゾーンヒートマップ -->
+          <!-- ゾーンヒートマップ（合計/対右/対左タブ） -->
+          <div class="zone-hand-tabs">
+            <button
+              v-for="tab in handTabs"
+              :key="tab.key"
+              type="button"
+              class="hand-tab"
+              :class="{ active: activeHand === tab.key }"
+              :disabled="tab.disabled"
+              @click="activeHand = tab.key"
+            >
+              {{ tab.label }}
+              <span class="hand-tab-n">n={{ tab.n }}</span>
+            </button>
+          </div>
           <ZoneHeatmap
             :title="isPitcher ? 'ゾーン別被打率' : 'ゾーン別打率'"
-            :subtitle="isPitcher ? '投手目線（赤=被打率高=ピンチゾーン）' : '打者目線（赤=打率高=得意ゾーン）'"
-            :course-stats="courseStats"
-            :sample-size="summary.ab || 0"
+            :subtitle="zoneSubtitle"
+            :course-stats="activeCourseStats"
+            :sample-size="activeSampleSize"
             :batter-handed="isPitcher ? null : playerInfo.handed"
             :show-silhouettes="!isPitcher"
             :hot-label="isPitcher ? 'ピンチ' : '得意'"
@@ -234,6 +248,7 @@ export default {
       isLoading: false,
       errorMessage: "",
       year: new Date().getFullYear(),
+      activeHand: "all", // 合計/対右/対左 タブの選択状態
     };
   },
   computed: {
@@ -248,6 +263,45 @@ export default {
     },
     courseStats() {
       return this.profile?.courseStats || [];
+    },
+    courseStatsByHand() {
+      return this.profile?.courseStatsByHand || null;
+    },
+    courseSampleSize() {
+      return this.profile?.courseSampleSize || {};
+    },
+    // 現在のタブで表示するゾーン別成績（データが無ければ合計にフォールバック）
+    activeCourseStats() {
+      const byHand = this.courseStatsByHand;
+      if (byHand && byHand[this.activeHand]) return byHand[this.activeHand];
+      return this.courseStats;
+    },
+    activeSampleSize() {
+      const s = this.courseSampleSize;
+      if (s && s[this.activeHand] != null) return s[this.activeHand];
+      return this.summary.ab || 0;
+    },
+    // タブ定義（ラベルは投手/打者で出し分け、サンプル0の対右/対左は非活性）
+    handTabs() {
+      const s = this.courseSampleSize || {};
+      const rightLabel = this.isPitcher ? "対右打者" : "対右投手";
+      const leftLabel = this.isPitcher ? "対左打者" : "対左投手";
+      const allN = s.all != null ? s.all : this.summary.ab || 0;
+      const rightN = s.vsRight != null ? s.vsRight : 0;
+      const leftN = s.vsLeft != null ? s.vsLeft : 0;
+      return [
+        { key: "all", label: "合計", n: allN, disabled: false },
+        { key: "vsRight", label: rightLabel, n: rightN, disabled: rightN === 0 },
+        { key: "vsLeft", label: leftLabel, n: leftN, disabled: leftN === 0 },
+      ];
+    },
+    zoneSubtitle() {
+      const base = this.isPitcher
+        ? "投手目線（赤=被打率高=ピンチゾーン）"
+        : "打者目線（赤=打率高=得意ゾーン）";
+      const tab = this.handTabs.find((t) => t.key === this.activeHand);
+      if (!tab || this.activeHand === "all") return base;
+      return `${base}・${tab.label}`;
     },
     pitchTypeStats() {
       return this.profile?.pitchTypeStats || [];
@@ -295,6 +349,7 @@ export default {
       this.isLoading = true;
       this.errorMessage = "";
       this.profile = null;
+      this.activeHand = "all"; // 選手が切り替わったら合計タブに戻す
       try {
         const response = await this.$axios.get(`/playerProfile/${this.playerId}`, {
           params: { year: this.year },
@@ -608,6 +663,46 @@ export default {
   font-weight: 600;
   color: #111827;
   font-size: 12px;
+}
+
+/* ゾーン 合計/対右/対左 タブ */
+.zone-hand-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.hand-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 6px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.hand-tab:hover:not(:disabled):not(.active) {
+  background: #f3f4f6;
+}
+.hand-tab.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+.hand-tab:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.hand-tab-n {
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.8;
 }
 
 /* 球種別 */

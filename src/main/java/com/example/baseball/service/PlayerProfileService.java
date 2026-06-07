@@ -84,6 +84,25 @@ public class PlayerProfileService {
         profile.put("playerInfo", buildPlayerInfo(player, isPitcher, atBatResults));
         profile.put("splits", buildRoleSplits(atBatResults, isPitcher));
 
+        // 追加: コース別成績を「合計/対右/対左」に分割
+        //   打者ページ → 相手投手の thrower、投手ページ → 相手打者の handed で分類（"0"=右, "1"=左）
+        //   両投/両打("2")や不明は対右/対左の振り分けから除外し、合計のみに含める
+        Map<Long, BaseballPlayer> opponentMap = loadOpponents(atBatResults, isPitcher);
+        List<VAtBatGameDetails> vsRight = filterByOpponentHand(atBatResults, isPitcher, opponentMap, "0");
+        List<VAtBatGameDetails> vsLeft = filterByOpponentHand(atBatResults, isPitcher, opponentMap, "1");
+
+        Map<String, Object> courseStatsByHand = new LinkedHashMap<>();
+        courseStatsByHand.put("all", profile.get("courseStats"));
+        courseStatsByHand.put("vsRight", pitchDetailService.buildCourseStatsForAtBats(vsRight));
+        courseStatsByHand.put("vsLeft", pitchDetailService.buildCourseStatsForAtBats(vsLeft));
+        profile.put("courseStatsByHand", courseStatsByHand);
+
+        Map<String, Object> courseSampleSize = new LinkedHashMap<>();
+        courseSampleSize.put("all", BaseballUtil.calculateStrokesNumber(atBatResults));
+        courseSampleSize.put("vsRight", BaseballUtil.calculateStrokesNumber(vsRight));
+        courseSampleSize.put("vsLeft", BaseballUtil.calculateStrokesNumber(vsLeft));
+        profile.put("courseSampleSize", courseSampleSize);
+
         // 追加: 対戦相手TOP/WORST
         profile.put("topOpponents", buildOpponents(atBatResults, isPitcher, true));
         profile.put("worstOpponents", buildOpponents(atBatResults, isPitcher, false));
@@ -95,11 +114,15 @@ public class PlayerProfileService {
         return profile;
     }
 
-    /** position から投手判定。"P" または「投」を含むなら投手とみなす。 */
+    /**
+     * position から投手判定。
+     * NPB公式の position はスコアブック番号（"1"=投手, "2"=捕手, ...）の文字列で格納される。
+     * 念のため "P" / 「投」 も投手とみなす。
+     */
     private boolean isPitcherPosition(String position) {
         if (position == null) return false;
         String p = position.trim();
-        return p.equalsIgnoreCase("P") || p.contains("投");
+        return p.equals("1") || p.equalsIgnoreCase("P") || p.contains("投");
     }
 
     /** 対象選手1人分の playerInfo。直近の打席から最新所属チームを推定する。 */
@@ -240,5 +263,43 @@ public class PlayerProfileService {
         });
 
         return opponents.stream().limit(5).collect(Collectors.toList());
+    }
+
+    /**
+     * 対戦相手の選手をまとめて取得し ID→選手 のマップにする。
+     * 打者ページなら相手 = 投手、投手ページなら相手 = 打者。
+     */
+    private Map<Long, BaseballPlayer> loadOpponents(List<VAtBatGameDetails> atBatResults, boolean isPitcher) {
+        List<Long> opponentIds = atBatResults.stream()
+                .map(v -> isPitcher ? v.getBatterId() : v.getPitcherId())
+                .distinct()
+                .collect(Collectors.toList());
+
+        Map<Long, BaseballPlayer> map = new HashMap<>();
+        if (!opponentIds.isEmpty()) {
+            for (BaseballPlayer p : baseballPlayerRepository.findAllById(opponentIds)) {
+                map.put(p.getPlayerId(), p);
+            }
+        }
+        return map;
+    }
+
+    /**
+     * 対戦相手の利き腕でフィルタする。
+     * handedCode "0"=右 / "1"=左。打者ページは相手投手の thrower、投手ページは相手打者の handed を見る。
+     * 相手が両投/両打("2")や不明はどちらの群にも含めない（合計のみに集計される）。
+     */
+    private List<VAtBatGameDetails> filterByOpponentHand(
+            List<VAtBatGameDetails> atBatResults, boolean isPitcher,
+            Map<Long, BaseballPlayer> opponentMap, String handedCode) {
+        return atBatResults.stream()
+                .filter(v -> {
+                    Long oppId = isPitcher ? v.getBatterId() : v.getPitcherId();
+                    BaseballPlayer opp = opponentMap.get(oppId);
+                    if (opp == null) return false;
+                    String hand = isPitcher ? opp.getHanded() : opp.getThrower();
+                    return handedCode.equals(hand);
+                })
+                .collect(Collectors.toList());
     }
 }

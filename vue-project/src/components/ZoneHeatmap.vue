@@ -257,7 +257,7 @@ export default {
 
 @media (max-width: 640px) {
   .batter-silhouette {
-    width: 70px;
+    width: 56px;
     opacity: 0.85;
   }
   .course-with-silhouettes {
@@ -268,6 +268,16 @@ export default {
     flex: 1 1 auto;
     max-width: 280px;
   }
+  .course-cell {
+    padding: 2px 1px;
+  }
+  .course-avg {
+    font-size: 12px;
+  }
+  .course-count {
+    font-size: 9px;
+    margin-top: 1px;
+  }
 }
 
 .course-cell {
@@ -275,8 +285,8 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 8px 4px;
-  min-height: 52px;
+  padding: 4px 2px;
+  aspect-ratio: 1 / 1;
   transition: background-color 0.2s;
 }
 

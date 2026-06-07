@@ -105,8 +105,8 @@
         class="mt-4 mb-4 search-button"
         @click="matchResultSearch"
         v-b-tooltip.hover.bottom
-        title="投手名か打者名のどちらか一方は必ず選択して検索ボタンを押下してください"
-      >検索</b-button>
+        :title="submitTooltip"
+      >{{ submitLabel }}</b-button>
     </div>
     <hr />
   </div>
@@ -122,11 +122,16 @@ export default {
     baseballTeamList: Array,
     batterList: Array,
     pitcherList: Array,
-    matchResultList: {
-      type: Array,
-      required: true,
-    },
     years: Array,
+    // 検索ボタンの文言・ツールチップ（選手検索/対戦検索で出し分け）
+    submitLabel: {
+      type: String,
+      default: "検索",
+    },
+    submitTooltip: {
+      type: String,
+      default: "投手名か打者名のどちらか一方は必ず選択して検索ボタンを押下してください",
+    },
   },
   data() {
     return {

@@ -77,6 +77,32 @@ public class PitchDetailService {
     }
 
     /**
+     * 任意の打席集合に対してコース別(5×5ゾーン)成績だけを算出する。
+     *
+     * 選手プロフィールで「対左/対右」などにフィルタした打席集合から
+     * ゾーン別成績を再計算するための公開ヘルパ。投球データを取得し直し、
+     * {@link #buildCourseStats} を再利用する。空リストなら全25ゾーンを ab=0 で返す。
+     */
+    public List<Map<String, Object>> buildCourseStatsForAtBats(List<VAtBatGameDetails> atBatResults) {
+        List<Long> atBatIds = atBatResults.stream()
+                .map(VAtBatGameDetails::getAtBatId)
+                .collect(Collectors.toList());
+
+        List<PitchResult> pitchResults = atBatIds.isEmpty()
+                ? List.of()
+                : pitchResultRepository.findByAtBatIdIn(atBatIds);
+
+        Map<Long, List<PitchResult>> pitchByAtBat = pitchResults.stream()
+                .sorted(Comparator.comparing(PitchResult::getPitchId))
+                .collect(Collectors.groupingBy(PitchResult::getAtBatId));
+
+        Map<Long, VAtBatGameDetails> atBatMap = atBatResults.stream()
+                .collect(Collectors.toMap(VAtBatGameDetails::getAtBatId, v -> v, (a, b) -> a));
+
+        return buildCourseStats(pitchResults, pitchByAtBat, atBatMap);
+    }
+
+    /**
      * SUMMARY: 打席数、打数、安打、打率、OPS等
      */
     private Map<String, Object> buildSummary(List<VAtBatGameDetails> atBatResults) {
