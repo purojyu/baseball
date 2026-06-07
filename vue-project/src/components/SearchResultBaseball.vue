@@ -14,10 +14,22 @@
         <tr v-for="(item, index) in sortedMatchResultList" :key="index" class="clickable-row" @click="onRowClick(item)">
           <td v-for="field in fields" :key="field.key" :class="['td', getCellClass(field.key, item)]">
             <template v-if="field.key === 'pitcherNm'">
-              <a :href="item.pitcherNpbUrl" target="_blank" rel="noopener noreferrer">{{ item.pitcherNm }}</a>
+              <router-link
+                v-if="item.pitcherId"
+                :to="`/players/${item.pitcherId}`"
+                class="player-link"
+                @click.native.stop
+              >{{ item.pitcherNm }}</router-link>
+              <span v-else>{{ item.pitcherNm }}</span>
             </template>
             <template v-else-if="field.key === 'batterNm'">
-              <a :href="item.batterNpbUrl" target="_blank" rel="noopener noreferrer">{{ item.batterNm }}</a>
+              <router-link
+                v-if="item.batterId"
+                :to="`/players/${item.batterId}`"
+                class="player-link"
+                @click.native.stop
+              >{{ item.batterNm }}</router-link>
+              <span v-else>{{ item.batterNm }}</span>
             </template>
             <template v-else-if="['battingAverage', 'ops', 'onBasePercentage', 'sluggingPercentage'].includes(field.key)">
               {{ item[field.key].toFixed(3) }}
@@ -192,6 +204,18 @@ tbody tr:hover {
 
 .clickable-row {
   cursor: pointer;
+}
+
+.player-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(78, 115, 223, 0.5);
+  text-underline-offset: 2px;
+  font-weight: 600;
+}
+.player-link:hover {
+  color: #2563eb;
+  text-decoration-color: #2563eb;
 }
 /* チームカラーの定義 */
 
