@@ -64,14 +64,18 @@ public class BaseballUtil {
     public static BigDecimal calculateOnBasePercentage(List<VAtBatGameDetails> vAtBatGameDetails) {
         int hitCount = calculateHitNumber(vAtBatGameDetails);
         int fourHitBallCount = calculateFourHitBallNumber(vAtBatGameDetails);
+        // NPB定義: 出塁率 = (安打 + 四球 + 死球) / (打数 + 四球 + 死球 + 犠飛)
+        // 分母に全打席(犠打含む)を使うと犠打の多い選手で過小になるため、犠飛のみ加算する
+        int denominator = calculateStrokesNumber(vAtBatGameDetails)
+                + fourHitBallCount
+                + calculateSacrificeFly(vAtBatGameDetails);
 
-        if (vAtBatGameDetails.size() == 0) {
+        if (denominator == 0) {
             return BigDecimal.ZERO.setScale(3, RoundingMode.HALF_UP);
         }
 
-        // 出塁率の計算
         return BigDecimal.valueOf(hitCount + fourHitBallCount)
-                .divide(BigDecimal.valueOf(vAtBatGameDetails.size()), 3, RoundingMode.HALF_UP);
+                .divide(BigDecimal.valueOf(denominator), 3, RoundingMode.HALF_UP);
     }
 
     /**
@@ -179,14 +183,14 @@ public class BaseballUtil {
      * 死球数
      */
     public static int calculateHitBallNumber(List<VAtBatGameDetails> vAtBatGameDetails) {
-        return countExactOccurrences(vAtBatGameDetails, HIT_BALL_RESULT);
+        return countOccurrences(vAtBatGameDetails, HIT_BALL_RESULT);
     }
 
     /**
      * 四死球数
      */
     public static int calculateFourHitBallNumber(List<VAtBatGameDetails> vAtBatGameDetails) {
-        return countExactOccurrences(vAtBatGameDetails, HIT_BALL_RESULT) +
+        return countOccurrences(vAtBatGameDetails, HIT_BALL_RESULT) +
                countOccurrences(vAtBatGameDetails, FOUR_BALL_RESULT);
     }
 
@@ -201,7 +205,7 @@ public class BaseballUtil {
      * 犠飛数
      */
     public static int calculateSacrificeFly(List<VAtBatGameDetails> vAtBatGameDetails) {
-        return countExactOccurrences(vAtBatGameDetails, SACRIFICE_FLY_RESULT);
+        return countOccurrences(vAtBatGameDetails, SACRIFICE_FLY_RESULT);
     }
 
     /**
