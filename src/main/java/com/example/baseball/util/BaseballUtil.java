@@ -23,6 +23,8 @@ public class BaseballUtil {
     // NPB公式は犠打企図(失策・野選含む)を打数に数えないため、"犠" の部分一致で揃える。
     private static final String SACRIFICE_RESULT = "犠";
     private static final String STRIKEOUT_RESULT = "三　振";
+    // 振り逃げ(振　逃)も三振としてカウントする（NPB公式は振り逃げを三振に計上する）
+    private static final String STRIKEOUT_REACH_RESULT = "振　逃";
 
     /**
      * 打率を計算するメソッド。
@@ -212,7 +214,8 @@ public class BaseballUtil {
      * 三振数
      */
     public static int calculateStrikeoutsNumber(List<VAtBatGameDetails> vAtBatGameDetails) {
-        return countExactOccurrences(vAtBatGameDetails, STRIKEOUT_RESULT);
+        return countExactOccurrences(vAtBatGameDetails, STRIKEOUT_RESULT)
+                + countExactOccurrences(vAtBatGameDetails, STRIKEOUT_REACH_RESULT);
     }
 
     /**
