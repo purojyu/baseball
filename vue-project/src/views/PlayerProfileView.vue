@@ -150,20 +150,48 @@
             :cold-label="isPitcher ? '抑え' : '苦手'"
             :year="year"
           />
+          <p class="zone-note">※コース別成績は{{ year }}年シーズンのデータのみ。過去年度の打率は下の「年度別成績」を参照。</p>
 
           <!-- 球種別 -->
           <div v-if="pitchTypeStats.length" class="pitch-type-section">
-            <h3 class="section-title">球種別 <span class="section-sub">{{ isPitcher ? "被打率" : "打率" }}</span></h3>
+            <h3 class="section-title">球種別 <span class="section-sub">投球割合 ／ {{ isPitcher ? "被打率" : "打率" }}</span></h3>
             <div class="pitch-type-list">
-              <div v-for="pt in pitchTypeStats" :key="pt.pitchType" class="pitch-type-row">
-                <span class="pt-name">{{ pt.pitchType }}</span>
+              <div v-for="seg in pitchSegments" :key="seg.label" class="pitch-type-row">
+                <span class="pt-name">{{ seg.label }}</span>
                 <div class="pt-bar-container">
-                  <div class="pt-bar" :style="{ width: getPitchTypeBarWidth(pt.ab) + '%' }"></div>
+                  <div class="pt-bar" :style="{ width: seg.pct + '%' }"></div>
                 </div>
-                <span class="pt-count">{{ pt.ab }}</span>
-                <span class="pt-avg">{{ formatAvg(pt.avg) }}</span>
+                <span class="pt-pct">{{ seg.pct }}%</span>
+                <span class="pt-avg">{{ formatAvg(seg.avg) }}</span>
               </div>
             </div>
+          </div>
+
+          <!-- 年度別成績（通算・コース別は2026のみなので過去年度の打率等をここで補完） -->
+          <div v-if="yearlyStats.length" class="yearly-section">
+            <h3 class="section-title">
+              年度別成績
+              <span class="section-sub">{{ isPitcher ? "被打率" : "打率" }}・通算（コース別は2026年のみ）</span>
+            </h3>
+            <table class="yearly-table">
+              <thead>
+                <tr>
+                  <th>年度</th><th>打席</th><th>打数</th><th>安打</th><th>本塁打</th><th>三振</th><th>四球</th><th>打率</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="y in yearlyStats" :key="y.year">
+                  <td class="year-label">{{ y.year }}</td>
+                  <td>{{ y.pa }}</td>
+                  <td>{{ y.ab }}</td>
+                  <td>{{ y.h }}</td>
+                  <td>{{ y.hr }}</td>
+                  <td>{{ y.so }}</td>
+                  <td>{{ y.bb }}</td>
+                  <td class="year-ba">{{ formatAvg(y.ba) }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -306,6 +334,23 @@ export default {
     pitchTypeStats() {
       return this.profile?.pitchTypeStats || [];
     },
+    yearlyStats() {
+      const list = this.profile?.yearlyStats || [];
+      // 最新年が上（降順）
+      return [...list].sort((a, b) => b.year - a.year);
+    },
+    pitchTypeTotalAb() {
+      return this.pitchTypeStats.reduce((sum, pt) => sum + (pt.ab || 0), 0);
+    },
+    // 球種別を割合%付きに変換（打数ベース）
+    pitchSegments() {
+      const total = this.pitchTypeTotalAb;
+      return this.pitchTypeStats.map((pt) => ({
+        label: pt.pitchType,
+        avg: pt.avg,
+        pct: total > 0 ? Math.round((pt.ab / total) * 100) : 0,
+      }));
+    },
     splits() {
       return this.profile?.splits || {};
     },
@@ -314,10 +359,6 @@ export default {
     },
     worstOpponents() {
       return this.profile?.worstOpponents || [];
-    },
-    maxPitchTypeAb() {
-      if (!this.pitchTypeStats.length) return 1;
-      return Math.max(...this.pitchTypeStats.map((pt) => pt.ab));
     },
     handedLabel() {
       const h = this.playerInfo.handed;
@@ -416,9 +457,6 @@ export default {
       if (num === 0) return ".000";
       if (num >= 1) return num.toFixed(3);
       return "." + num.toFixed(3).split(".")[1];
-    },
-    getPitchTypeBarWidth(ab) {
-      return (ab / this.maxPitchTypeAb) * 100;
     },
   },
 };
@@ -807,6 +845,50 @@ export default {
   text-align: center;
   background: #f9fafb;
   border-radius: 4px;
+}
+
+/* 球種別 割合% 表示 */
+.pt-pct {
+  width: 40px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* 年度別成績テーブル */
+.yearly-section {
+  margin-bottom: 24px;
+}
+.yearly-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.yearly-table th {
+  padding: 6px 4px;
+  text-align: center;
+  color: #6b7280;
+  font-weight: 600;
+  border-bottom: 2px solid #e5e7eb;
+}
+.yearly-table td {
+  padding: 6px 4px;
+  text-align: center;
+  border-bottom: 1px solid #f3f4f6;
+}
+.yearly-table .year-label,
+.yearly-table .year-ba {
+  font-weight: 700;
+  color: #111827;
+}
+
+/* コース別の注記 */
+.zone-note {
+  font-size: 11px;
+  color: #9ca3af;
+  margin: 6px 0 16px;
+  line-height: 1.5;
 }
 
 /* レスポンシブ */

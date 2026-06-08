@@ -19,7 +19,6 @@
         aria-hidden="true"
       ></div>
       <div class="course-grid-wrapper">
-        <div class="zone-axis-label zone-axis-top">↑ 高め</div>
         <div class="course-grid">
           <div
             v-for="zone in courseStats"
@@ -35,7 +34,6 @@
             <span v-if="zone.ab > 0" class="course-count">{{ zone.h }}/{{ zone.ab }}</span>
           </div>
         </div>
-        <div class="zone-axis-label zone-axis-bottom">↓ 低め</div>
       </div>
       <img
         v-if="showSilhouettes && showRightSilhouette"
@@ -235,13 +233,6 @@ export default {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-}
-
-.zone-axis-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #6b7280;
-  letter-spacing: 0.05em;
 }
 
 .course-grid {
