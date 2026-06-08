@@ -19,6 +19,9 @@ public class BaseballUtil {
     private static final String HIT_BALL_RESULT = "死　球";
     private static final String SACRIFICE_HIT_RESULT = "犠打";
     private static final String SACRIFICE_FLY_RESULT = "犠飛";
+    // 打数(AB)除外用: 犠打・犠飛に加え、犠打失敗系(投犠失/投犠野/一犠失 等)も含めて一括除外する。
+    // NPB公式は犠打企図(失策・野選含む)を打数に数えないため、"犠" の部分一致で揃える。
+    private static final String SACRIFICE_RESULT = "犠";
     private static final String STRIKEOUT_RESULT = "三　振";
 
     /**
@@ -38,11 +41,11 @@ public class BaseballUtil {
                 hits++;
                 atBats++;
             } 
-            // フォアボール、デッドボール、犠打、犠牲フライは無視する
+            // フォアボール、デッドボール、犠打・犠飛（犠打失敗系含む）は打数に数えない
+            // 死球は「死　球①」など得点付き表記もあるため contains で判定する
             else if (!result.contains(FOUR_BALL_RESULT) &&
-                     !Objects.equals(result, HIT_BALL_RESULT) &&
-                     !result.contains(SACRIFICE_HIT_RESULT) &&
-                     !result.contains(SACRIFICE_FLY_RESULT)) {
+                     !result.contains(HIT_BALL_RESULT) &&
+                     !result.contains(SACRIFICE_RESULT)) {
                 atBats++;
             }
         }
@@ -111,8 +114,8 @@ public class BaseballUtil {
         int count = 0;
         for (VAtBatGameDetails detail : vAtBatGameDetails) {
             String result = detail.getResult();
-            if (result.contains(FOUR_BALL_RESULT) || Objects.equals(result, HIT_BALL_RESULT) ||
-                result.contains(SACRIFICE_HIT_RESULT) || result.contains(SACRIFICE_FLY_RESULT)) {
+            if (result.contains(FOUR_BALL_RESULT) || result.contains(HIT_BALL_RESULT) ||
+                result.contains(SACRIFICE_RESULT)) {
                 count++;
             }
         }
