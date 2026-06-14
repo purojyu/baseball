@@ -25,6 +25,10 @@ public class BaseballUtil {
     private static final String STRIKEOUT_RESULT = "三　振";
     // 振り逃げ(振　逃)も三振としてカウントする（NPB公式は振り逃げを三振に計上する）
     private static final String STRIKEOUT_REACH_RESULT = "振　逃";
+    // 打数(AB)除外用: 妨害による出塁(捕守妨/打妨出/走妨出 ①付き表記含む)は打数に数えない。
+    // NPB公式は打撃・守備・走塁妨害での出塁を打数にも出塁率の分母にも含めないため、"妨" の部分一致で揃える。
+    // なお「違　反」(反則打球・打順違反)は打者アウト＝打数に計上されるため除外しない。
+    private static final String INTERFERENCE_RESULT = "妨";
 
     /**
      * 打率を計算するメソッド。
@@ -43,11 +47,12 @@ public class BaseballUtil {
                 hits++;
                 atBats++;
             } 
-            // フォアボール、デッドボール、犠打・犠飛（犠打失敗系含む）は打数に数えない
+            // フォアボール、デッドボール、犠打・犠飛（犠打失敗系含む）、妨害出塁は打数に数えない
             // 死球は「死　球①」など得点付き表記もあるため contains で判定する
             else if (!result.contains(FOUR_BALL_RESULT) &&
                      !result.contains(HIT_BALL_RESULT) &&
-                     !result.contains(SACRIFICE_RESULT)) {
+                     !result.contains(SACRIFICE_RESULT) &&
+                     !result.contains(INTERFERENCE_RESULT)) {
                 atBats++;
             }
         }
@@ -121,7 +126,7 @@ public class BaseballUtil {
         for (VAtBatGameDetails detail : vAtBatGameDetails) {
             String result = detail.getResult();
             if (result.contains(FOUR_BALL_RESULT) || result.contains(HIT_BALL_RESULT) ||
-                result.contains(SACRIFICE_RESULT)) {
+                result.contains(SACRIFICE_RESULT) || result.contains(INTERFERENCE_RESULT)) {
                 count++;
             }
         }
