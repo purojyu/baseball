@@ -29,6 +29,9 @@ import com.example.baseball.util.BaseballUtil;
 public class PitchDetailService {
 
     private static final Set<String> HIT_RESULTS = Set.of("安", "２", "３", "本");
+    // 打点(RBI)は打席結果末尾の丸数字から算出するが、2016-2017のNPB box取込データには
+    // 丸数字マーカーが無く全打席0になる。誤解を避けるためこの年より前の年度別RBIは null(画面で「-」)にする。
+    private static final int RBI_DATA_START_YEAR = 2018;
     // 打数(AB)除外の判定は BaseballUtil.isNonAtBat に一本化(定義の二重管理を排し表記揺れ起因のズレを防ぐ)
     // ボールカウント加算対象
     private static final Set<String> BALL_RESULTS = Set.of("ボール");
@@ -293,7 +296,9 @@ public class PitchDetailService {
                     stat.put("ab", BaseballUtil.calculateStrokesNumber(yearResults));
                     stat.put("h", BaseballUtil.calculateHitNumber(yearResults));
                     stat.put("hr", BaseballUtil.calculateHomeRun(yearResults));
-                    stat.put("rbi", BaseballUtil.calculateRbi(yearResults));
+                    // 2017以前は丸数字マーカー欠落のため打点データ無し → null(画面で「-」表示)
+                    stat.put("rbi", entry.getKey() >= RBI_DATA_START_YEAR
+                            ? BaseballUtil.calculateRbi(yearResults) : null);
                     stat.put("so", BaseballUtil.calculateStrikeoutsNumber(yearResults));
                     stat.put("bb", BaseballUtil.calculateFourBallNumber(yearResults));
                     stat.put("ba", BaseballUtil.calculateBattingAverage(yearResults));
