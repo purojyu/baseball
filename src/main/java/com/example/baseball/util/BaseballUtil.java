@@ -233,6 +233,37 @@ public class BaseballUtil {
     }
 
     /**
+     * 打点(RBI)数。
+     * NPB/Yahoo の打席結果は打点を末尾の丸数字(①②③④)で表す(例: 中前安①, 左越本④=満塁弾,
+     * 四　球①=押出, 二ゴロ①=進塁打)。打点が無い打席は丸数字を持たない。
+     * 末尾の丸数字を打点として全打席分を合計する。
+     * @param vAtBatGameDetails 打席結果のリスト
+     * @return 打点数
+     */
+    public static int calculateRbi(List<VAtBatGameDetails> vAtBatGameDetails) {
+        int rbi = 0;
+        for (VAtBatGameDetails detail : vAtBatGameDetails) {
+            rbi += rbiFromResult(detail.getResult());
+        }
+        return rbi;
+    }
+
+    /**
+     * 打席結果文字列の末尾の丸数字(①=U+2460〜)を打点として返す。丸数字でなければ 0。
+     */
+    private static int rbiFromResult(String result) {
+        if (result == null || result.isEmpty()) {
+            return 0;
+        }
+        char last = result.charAt(result.length() - 1);
+        // 丸数字 ①(U+2460)〜⑳(U+2473) は連続コードポイント。1打席の打点は最大4(満塁本塁打)。
+        if (last >= '①' && last <= '⑳') {
+            return last - '①' + 1;
+        }
+        return 0;
+    }
+
+    /**
      * 塁打数
      */
     public static int calculateBaseHitsNumber(List<VAtBatGameDetails> vAtBatGameDetails) {
