@@ -52,7 +52,7 @@
 
       <!-- データなし -->
       <div v-if="!profile.hasData" class="no-data">
-        <p>{{ year }}年シーズンの対戦データはまだありません。</p>
+        <p>対戦データがまだありません。</p>
         <p class="no-data-sub">シーズン中は毎日10:30 JSTに最新データを取り込みます。</p>
       </div>
 
@@ -61,7 +61,7 @@
         <!-- 左サイドバー: SUMMARY -->
         <aside class="profile-sidebar-left">
           <div class="summary-section">
-            <h3 class="section-title">SUMMARY <span class="section-sub">{{ year }}年</span></h3>
+            <h3 class="section-title">SUMMARY <span class="section-sub">{{ periodLabel }}</span></h3>
             <div class="summary-grid">
               <div class="summary-row">
                 <span class="summary-label">打席 PA</span>
@@ -128,49 +128,6 @@
 
         <!-- メイン -->
         <div class="profile-main">
-          <!-- ゾーンヒートマップ（合計/対右/対左タブ） -->
-          <div class="zone-hand-tabs">
-            <button
-              v-for="tab in handTabs"
-              :key="tab.key"
-              type="button"
-              class="hand-tab"
-              :class="{ active: activeHand === tab.key }"
-              :disabled="tab.disabled"
-              @click="activeHand = tab.key"
-            >
-              {{ tab.label }}
-              <span class="hand-tab-n">n={{ tab.n }}</span>
-            </button>
-          </div>
-          <ZoneHeatmap
-            :title="isPitcher ? 'ゾーン別被打率' : 'ゾーン別打率'"
-            :subtitle="zoneSubtitle"
-            :course-stats="activeCourseStats"
-            :sample-size="activeSampleSize"
-            :batter-handed="isPitcher ? null : playerInfo.handed"
-            :show-silhouettes="!isPitcher"
-            :hot-label="isPitcher ? 'ピンチ' : '得意'"
-            :cold-label="isPitcher ? '抑え' : '苦手'"
-            :year="year"
-          />
-          <p class="zone-note">※コース別成績は{{ year }}年シーズンのデータのみ。過去年度の打率は下の「年度別成績」を参照。</p>
-
-          <!-- 球種別 -->
-          <div v-if="pitchTypeStats.length" class="pitch-type-section">
-            <h3 class="section-title">球種別 <span class="section-sub">投球割合 ／ {{ isPitcher ? "被打率" : "打率" }}</span></h3>
-            <div class="pitch-type-list">
-              <div v-for="seg in pitchSegments" :key="seg.label" class="pitch-type-row">
-                <span class="pt-name">{{ seg.label }}</span>
-                <div class="pt-bar-container">
-                  <div class="pt-bar" :style="{ width: seg.pct + '%' }"></div>
-                </div>
-                <span class="pt-pct">{{ seg.pct }}%</span>
-                <span class="pt-avg">{{ formatAvg(seg.avg) }}</span>
-              </div>
-            </div>
-          </div>
-
           <!-- 年度別成績（通算・コース別は2026のみなので過去年度の打率等をここで補完） -->
           <div v-if="yearlyStats.length" class="yearly-section">
             <h3 class="section-title">
@@ -197,6 +154,49 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- ゾーンヒートマップ（合計/対右/対左タブ） -->
+          <div class="zone-hand-tabs">
+            <button
+              v-for="tab in handTabs"
+              :key="tab.key"
+              type="button"
+              class="hand-tab"
+              :class="{ active: activeHand === tab.key }"
+              :disabled="tab.disabled"
+              @click="activeHand = tab.key"
+            >
+              {{ tab.label }}
+              <span class="hand-tab-n">n={{ tab.n }}</span>
+            </button>
+          </div>
+          <ZoneHeatmap
+            :title="isPitcher ? 'ゾーン別被打率' : 'ゾーン別打率'"
+            :subtitle="zoneSubtitle"
+            :course-stats="activeCourseStats"
+            :sample-size="activeSampleSize"
+            :batter-handed="isPitcher ? null : playerInfo.handed"
+            :show-silhouettes="!isPitcher"
+            :hot-label="isPitcher ? 'ピンチ' : '得意'"
+            :cold-label="isPitcher ? '抑え' : '苦手'"
+            :year="courseYear"
+          />
+          <p class="zone-note">※コース別成績は{{ courseYear }}年シーズンのデータのみ。各年度の打率は上の「年度別成績」を参照。</p>
+
+          <!-- 球種別 -->
+          <div v-if="pitchTypeStats.length" class="pitch-type-section">
+            <h3 class="section-title">球種別 <span class="section-sub">投球割合 ／ {{ isPitcher ? "被打率" : "打率" }}</span></h3>
+            <div class="pitch-type-list">
+              <div v-for="seg in pitchSegments" :key="seg.label" class="pitch-type-row">
+                <span class="pt-name">{{ seg.label }}</span>
+                <div class="pt-bar-container">
+                  <div class="pt-bar" :style="{ width: seg.pct + '%' }"></div>
+                </div>
+                <span class="pt-pct">{{ seg.pct }}%</span>
+                <span class="pt-avg">{{ formatAvg(seg.avg) }}</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -280,7 +280,8 @@ export default {
       profile: null,
       isLoading: false,
       errorMessage: "",
-      year: new Date().getFullYear(),
+      // 既定は通算表示。当年データが無い選手(引退・MLB移籍・今季未出場)でも年度別成績を必ず出すため。
+      year: "通算",
       activeHand: "all", // 合計/対右/対左 タブの選択状態
     };
   },
@@ -290,6 +291,14 @@ export default {
     },
     isPitcher() {
       return this.profile?.isPitcher === true;
+    },
+    // SUMMARY等の見出し用ラベル（通算 or 「○○年」）
+    periodLabel() {
+      return this.year === "通算" ? "通算" : `${this.year}年`;
+    },
+    // コース別(ゾーン)・球種別は投球データのある最新シーズンのみ
+    courseYear() {
+      return "2026";
     },
     summary() {
       return this.profile?.summary || {};
@@ -422,11 +431,11 @@ export default {
       const baLabel = this.summary.ba != null ? this.formatAvg(this.summary.ba) : "—";
 
       // タイトル
-      const title = `${info.playerNm}（${team}）${roleLabel}・ゾーン別成績 ${this.year}年 | Pitcher-vs-Batter`;
+      const title = `${info.playerNm}（${team}）${roleLabel}・ゾーン別成績 ${this.periodLabel} | Pitcher-vs-Batter`;
       document.title = title;
 
       // description
-      const desc = `${team}・${info.playerNm}の${this.year}年シーズン${roleLabel}${baLabel}、対戦相手別・5×5ゾーン別の成績を可視化。投手vs打者の個人対戦データ。`;
+      const desc = `${team}・${info.playerNm}の${this.periodLabel}${roleLabel}${baLabel}、対戦相手別・5×5ゾーン別の成績を可視化。投手vs打者の個人対戦データ。`;
       this.upsertMeta("description", desc);
 
       // canonical
