@@ -673,32 +673,10 @@ public class YahooPitchScraper {
             double top = Double.parseDouble(m.group(1));
             double left = Double.parseDouble(m.group(2));
 
-            // 1) アイコン中心座標
-            double cx = left + BALL_RADIUS;
-            double cy = top + BALL_RADIUS;
+            // 座標→ゾーン変換（共通メソッド coordToZone に一本化。Yahoo座標系のまま反転なし）
+            int zone = coordToZone(top, left);
 
-            // 2) 行・列 (0〜4)
-            int col = (int) ((cx - BORDER_PX) / CELL_W);
-            int row = (int) ((cy - BORDER_PX) / CELL_H);
-
-            // 3) マイナス座標や範囲外の処理
-            if (top < 0) {
-                // マイナス座標の場合は最上段（row=0）に配置
-                row = 0;
-            }
-            if (left < 0) {
-                // マイナス座標の場合は最左列（col=0）に配置
-                col = 0;
-            }
-
-            col = clamp(col, 0, GRID_COLS - 1);
-            row = clamp(row, 0, GRID_ROWS - 1);
-
-            // 4) 打者目線でのゾーン番号計算
-            // Yahoo!の座標系はそのまま使用（反転処理は不要）
-            int zone = row * GRID_COLS + col + 1;
-
-            // 5) 球番号と紐付け
+            // 球番号と紐付け
             int pitchNo = Integer.parseInt(span.selectFirst(".bb-icon__number").text());
             result.put(pitchNo, zone);
         }
@@ -721,23 +699,22 @@ public class YahooPitchScraper {
     }
     
     /**
-     * テスト用：座標からゾーン番号を直接計算
-     * @param top Y座標(ピクセル)
-     * @param left X座標(ピクセル)
-     * @param isLeftBatter 左打者かどうか
+     * Yahoo一球速報のボール座標(top,left ピクセル)を5×5ゾーン(1-25)に変換する。
+     * Yahooの座標系をそのまま使用し左右反転しない（buildCourseMap の取込と同一ロジック）。
+     * マイナス座標は最上段/最左列に寄せ、範囲外はグリッド端にクランプする。
+     * @param top  Y座標(px)
+     * @param left X座標(px)
      * @return ゾーン番号(1-25)
      */
-    public int calculateZone(int top, int left, boolean isLeftBatter) {
+    public int coordToZone(double top, double left) {
         double cx = left + BALL_RADIUS;
         double cy = top + BALL_RADIUS;
-        
         int col = (int) ((cx - BORDER_PX) / CELL_W);
         int row = (int) ((cy - BORDER_PX) / CELL_H);
+        if (top < 0) row = 0;
+        if (left < 0) col = 0;
         col = clamp(col, 0, GRID_COLS - 1);
         row = clamp(row, 0, GRID_ROWS - 1);
-        
-        if (!isLeftBatter) col = GRID_COLS - 1 - col;
-        
         return row * GRID_COLS + col + 1;
     }
     
