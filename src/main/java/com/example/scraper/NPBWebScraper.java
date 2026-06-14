@@ -249,6 +249,14 @@ public class NPBWebScraper {
 	        Long homeTeamId =  Long.valueOf(convTeam(row.selectFirst("div.team1").text()));
 	        Long awayTeamId =  Long.valueOf(convTeam(row.selectFirst("div.team2").text()));
 
+	        // 【既知の課題: 投手の対戦打者数/奪三振の取り込み再発】
+	        // 取込済み試合はここでスキップし二度と再取得しない。一方 NPB公式box は試合直後だけ
+	        // 中断打席(走者アウト等で打席ノーカウント→打ち直し)を投手の打者数に+1で計上し、
+	        // 数日内に修正する(該当セルを"-"化、打者数-1)。本バッチは翌日取込のため未修正版を取り込み、
+	        // その後NPBが直しても再取得しないので「先発+1/リリーフ-1(試合内ゼロサム)」のズレが残置する。
+	        // ※打者成績は不変、投手の対戦打者数/奪三振/被打率のみズレる。過去分は一括監査で補正済
+	        //   (tasks/strikeout-bf-overcount-audit.md)。恒久対策(直近2週間を削除→再取込する照合ジョブ)は
+	        //   ユーザー判断で見送り中。2026以降の新規試合では同型ズレが再発しうる点に注意。
 	        if (baseballGameService.findByGameDateAndTeamId(gameDate, homeTeamId, awayTeamId).isEmpty()) {
 	            gameLinks.add("https://npb.jp" + linkTag.attr("href") + "box.html");
 	        }
