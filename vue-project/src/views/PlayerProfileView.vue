@@ -147,7 +147,7 @@
                   <td>{{ y.ab }}</td>
                   <td>{{ y.h }}</td>
                   <td>{{ y.hr }}</td>
-                  <td v-if="!isPitcher">{{ y.rbi }}</td>
+                  <td v-if="!isPitcher">{{ y.rbi == null ? "—" : y.rbi }}</td>
                   <td>{{ y.so }}</td>
                   <td>{{ y.bb }}</td>
                   <td class="year-ba">{{ formatAvg(y.ba) }}</td>
