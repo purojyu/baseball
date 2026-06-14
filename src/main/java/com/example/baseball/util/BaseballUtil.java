@@ -31,6 +31,21 @@ public class BaseballUtil {
     private static final String INTERFERENCE_RESULT = "妨";
 
     /**
+     * NPB打数(AB)に数えない打席かを判定する。
+     * 四球・死球・犠打/犠飛(犠打失敗系含む)・妨害出塁を除外する。
+     * 「違　反」(反則打球・打順違反)は打者アウト=打数計上のため除外しない。
+     * 打撃集計(本クラス)と球種別/コース別集計(PitchDetailService)で同一定義を共有する。
+     * @param result 打席結果文字列
+     * @return 打数に数えない打席なら true
+     */
+    public static boolean isNonAtBat(String result) {
+        return result.contains(FOUR_BALL_RESULT)
+                || result.contains(HIT_BALL_RESULT)
+                || result.contains(SACRIFICE_RESULT)
+                || result.contains(INTERFERENCE_RESULT);
+    }
+
+    /**
      * 打率を計算するメソッド。
      * 部分一致を使用してヒット判定を行います。
      * @param vAtBatGameDetails 打席結果のリスト
@@ -48,11 +63,7 @@ public class BaseballUtil {
                 atBats++;
             } 
             // フォアボール、デッドボール、犠打・犠飛（犠打失敗系含む）、妨害出塁は打数に数えない
-            // 死球は「死　球①」など得点付き表記もあるため contains で判定する
-            else if (!result.contains(FOUR_BALL_RESULT) &&
-                     !result.contains(HIT_BALL_RESULT) &&
-                     !result.contains(SACRIFICE_RESULT) &&
-                     !result.contains(INTERFERENCE_RESULT)) {
+            else if (!isNonAtBat(result)) {
                 atBats++;
             }
         }
@@ -124,9 +135,7 @@ public class BaseballUtil {
     public static int calculateStrokesNumber(List<VAtBatGameDetails> vAtBatGameDetails) {
         int count = 0;
         for (VAtBatGameDetails detail : vAtBatGameDetails) {
-            String result = detail.getResult();
-            if (result.contains(FOUR_BALL_RESULT) || result.contains(HIT_BALL_RESULT) ||
-                result.contains(SACRIFICE_RESULT) || result.contains(INTERFERENCE_RESULT)) {
+            if (isNonAtBat(detail.getResult())) {
                 count++;
             }
         }
