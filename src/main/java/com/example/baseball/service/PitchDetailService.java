@@ -121,7 +121,7 @@ public class PitchDetailService {
         summary.put("doubles", BaseballUtil.calculateDoublesNumber(atBatResults));
         summary.put("triples", BaseballUtil.calculateTriplesNumber(atBatResults));
         summary.put("hr", BaseballUtil.calculateHomeRun(atBatResults));
-        summary.put("rbi", 0); // RBIは打席結果からは取得不可
+        summary.put("rbi", BaseballUtil.calculateRbi(atBatResults)); // 打席結果末尾の丸数字(①②③④)を打点として集計
         summary.put("so", BaseballUtil.calculateStrikeoutsNumber(atBatResults));
         summary.put("bb", BaseballUtil.calculateFourBallNumber(atBatResults));
         summary.put("ba", BaseballUtil.calculateBattingAverage(atBatResults));
