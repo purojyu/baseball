@@ -293,6 +293,7 @@ public class PitchDetailService {
                     stat.put("ab", BaseballUtil.calculateStrokesNumber(yearResults));
                     stat.put("h", BaseballUtil.calculateHitNumber(yearResults));
                     stat.put("hr", BaseballUtil.calculateHomeRun(yearResults));
+                    stat.put("rbi", BaseballUtil.calculateRbi(yearResults));
                     stat.put("so", BaseballUtil.calculateStrikeoutsNumber(yearResults));
                     stat.put("bb", BaseballUtil.calculateFourBallNumber(yearResults));
                     stat.put("ba", BaseballUtil.calculateBattingAverage(yearResults));

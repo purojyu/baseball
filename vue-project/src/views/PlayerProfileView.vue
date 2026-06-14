@@ -79,6 +79,10 @@
                 <span class="summary-label">{{ isPitcher ? "被本塁打" : "本塁打 HR" }}</span>
                 <span class="summary-value">{{ summary.hr }}</span>
               </div>
+              <div v-if="!isPitcher" class="summary-row">
+                <span class="summary-label">打点 RBI</span>
+                <span class="summary-value">{{ summary.rbi }}</span>
+              </div>
               <div class="summary-row">
                 <span class="summary-label">{{ isPitcher ? "奪三振 SO" : "三振 SO" }}</span>
                 <span class="summary-value">{{ summary.so }}</span>
@@ -176,7 +180,7 @@
             <table class="yearly-table">
               <thead>
                 <tr>
-                  <th>年度</th><th>打席</th><th>打数</th><th>安打</th><th>本塁打</th><th>三振</th><th>四球</th><th>打率</th>
+                  <th>年度</th><th>打席</th><th>打数</th><th>安打</th><th>本塁打</th><th v-if="!isPitcher">打点</th><th>三振</th><th>四球</th><th>打率</th>
                 </tr>
               </thead>
               <tbody>
@@ -186,6 +190,7 @@
                   <td>{{ y.ab }}</td>
                   <td>{{ y.h }}</td>
                   <td>{{ y.hr }}</td>
+                  <td v-if="!isPitcher">{{ y.rbi }}</td>
                   <td>{{ y.so }}</td>
                   <td>{{ y.bb }}</td>
                   <td class="year-ba">{{ formatAvg(y.ba) }}</td>
