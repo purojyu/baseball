@@ -29,7 +29,7 @@ import com.example.baseball.util.BaseballUtil;
 public class PitchDetailService {
 
     private static final Set<String> HIT_RESULTS = Set.of("安", "２", "３", "本");
-    private static final Set<String> NON_AB_RESULTS = Set.of("四球", "死球", "犠打", "犠飛", "敬遠", "妨害");
+    // 打数(AB)除外の判定は BaseballUtil.isNonAtBat に一本化(定義の二重管理を排し表記揺れ起因のズレを防ぐ)
     // ボールカウント加算対象
     private static final Set<String> BALL_RESULTS = Set.of("ボール");
     // ストライクカウント加算対象（見逃し・空振り含む）
@@ -150,7 +150,7 @@ public class PitchDetailService {
 
             if (atBat == null || pitches.isEmpty()) continue;
             // 四球・死球等は打数に含まない
-            if (NON_AB_RESULTS.stream().anyMatch(r -> atBat.getResult().contains(r))) continue;
+            if (BaseballUtil.isNonAtBat(atBat.getResult())) continue;
 
             // 最終球のコースを使用
             PitchResult lastPitch = pitches.get(pitches.size() - 1);
@@ -191,7 +191,7 @@ public class PitchDetailService {
             VAtBatGameDetails atBat = atBatMap.get(atBatId);
 
             if (atBat == null || pitches.isEmpty()) continue;
-            if (NON_AB_RESULTS.stream().anyMatch(r -> atBat.getResult().contains(r))) continue;
+            if (BaseballUtil.isNonAtBat(atBat.getResult())) continue;
 
             PitchResult lastPitch = pitches.get(pitches.size() - 1);
             typeToResults.computeIfAbsent(lastPitch.getPitchType(), k -> new ArrayList<>()).add(atBat.getResult());
