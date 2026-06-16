@@ -54,10 +54,11 @@ resource "aws_scheduler_schedule" "scraper_daily" {
 }
 
 # API Lambda warmup schedules（コールドスタート対策）
-# 5個のスケジュールを同時刻にcron発火させ、warmupエンドポイントが2秒sleepすることで
-# 5並列コンテナをwarm維持する。これによりフロントエンドが並列API呼び出ししてもcoldにならない。
+# 4個のスケジュールを同時刻にcron発火させ、warmupエンドポイントが2秒sleepすることで
+# 4並列コンテナをwarm維持する。フロント初期ロードの実ピーク並列(2〜3)に合わせており、
+# これによりフロントエンドが並列API呼び出ししてもcoldにならない。
 resource "aws_scheduler_schedule" "api_warmup" {
-  count = 10
+  count = 4
 
   name       = "baseball-api-warmup-${count.index + 1}"
   group_name = "default"
@@ -66,7 +67,7 @@ resource "aws_scheduler_schedule" "api_warmup" {
     mode = "OFF"
   }
 
-  # 毎時 0,10,20,30,40,50分に5個まとめて発火
+  # 毎時 0,10,20,30,40,50分に4個まとめて発火
   schedule_expression = "cron(0/10 * * * ? *)"
 
   target {
