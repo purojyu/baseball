@@ -233,14 +233,19 @@ export default {
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  /* 基本は280px幅。シルエットと並んで横幅が足りない時は縮小を許可する
+     （min-width:0 がないとflexアイテムは中身幅より縮まない） */
+  flex: 0 1 280px;
+  min-width: 0;
 }
 
 .course-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  /* minmax(0, 1fr) で各列が中身幅より小さくなれるようにし、
+     5列が常にグリッド幅に収まるようにする（右端が見切れるのを防ぐ） */
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 2px;
-  width: 280px;
-  flex-shrink: 0;
+  width: 100%;
   border: 2px solid #d1d5db;
   border-radius: 4px;
   overflow: hidden;
@@ -253,11 +258,6 @@ export default {
   }
   .course-with-silhouettes {
     gap: 4px;
-  }
-  .course-grid {
-    width: auto;
-    flex: 1 1 auto;
-    max-width: 280px;
   }
   .course-cell {
     padding: 2px 1px;
