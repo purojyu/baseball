@@ -123,7 +123,10 @@ export default {
   margin: 0 auto;
   padding: 16px;
   text-align: left;
-  /* 読み込み中にフッターが画面上部に出て、データ表示時に押し下げられる(CLS)のを防ぐ */
+  /* 読み込み中は中身が空で、親の flex 中央寄せにより幅32px・高さ0に縮む。
+     データ表示時に横幅・フッター位置が一気に変わる(CLS)ため、先に枠を確保しておく */
+  width: 100%;
+  box-sizing: border-box;
   min-height: 100vh;
 }
 .error-card {
