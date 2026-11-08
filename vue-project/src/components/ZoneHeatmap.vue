@@ -3,7 +3,7 @@
     <h3 class="section-title">
       {{ title }}
       <span v-if="year" class="year-badge">{{ year }}年シーズン</span>
-      <span class="section-sub">{{ subtitle }} · n={{ sampleSize }}打席</span>
+      <span class="section-sub">{{ subtitle }} · n={{ sampleSize }}打数</span>
     </h3>
     <div class="course-with-silhouettes">
       <img
@@ -26,7 +26,7 @@
             class="course-cell"
             :class="{ 'strike-zone': isStrikeZone(zone.zone), 'ball-zone': !isStrikeZone(zone.zone) }"
             :style="{
-              backgroundColor: getCourseColor(zone.avg),
+              backgroundColor: getCourseColor(zone),
               boxShadow: getStrikeZoneShadow(zone.zone),
             }"
           >
@@ -58,6 +58,7 @@
         <span class="legend-color legend-color-mid"></span>平均
         <span class="legend-color legend-color-cold"></span>{{ coldLabel }}
       </span>
+      <span class="legend-item legend-note">{{ minSample }}打数未満のマスは色なし</span>
     </div>
   </div>
 </template>
@@ -84,15 +85,21 @@ export default {
       type: String,
       default: "打者目線",
     },
-    // 年度（バッジ表示）。未指定なら現在年
+    // 年度（バッジ表示）。未指定ならバッジを出さない
+    // （以前は現在年が既定だったため、通算集計の対戦ページに「当年シーズン」と誤表示されていた）
     year: {
       type: [Number, String],
-      default: () => new Date().getFullYear(),
+      default: null,
     },
     // n=表示用サンプル数
     sampleSize: {
       type: Number,
       default: 0,
+    },
+    // この打数未満のゾーンは得意/苦手の色を付けない（1〜2打数で極端な色になるのを防ぐ）
+    minSample: {
+      type: Number,
+      default: 3,
     },
     // 打席（"0"=右打, "1"=左打, "2"=両打）。シルエット制御用
     batterHanded: {
@@ -140,9 +147,10 @@ export default {
       if (num >= 1) return num.toFixed(3);
       return "." + num.toFixed(3).split(".")[1];
     },
-    getCourseColor(avg) {
-      if (avg === null || avg === undefined) return "#f5f5f5";
-      const val = Number(avg);
+    getCourseColor(zone) {
+      if (zone.avg === null || zone.avg === undefined) return "#f5f5f5";
+      if ((zone.ab || 0) < this.minSample) return "#ffffff";
+      const val = Number(zone.avg);
       if (val >= 0.4) return "rgba(220, 38, 38, 0.5)";
       if (val >= 0.3) return "rgba(220, 38, 38, 0.3)";
       if (val >= 0.25) return "rgba(220, 38, 38, 0.15)";
@@ -314,6 +322,10 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+.legend-note {
+  color: #9ca3af;
 }
 
 .legend-strike-marker {

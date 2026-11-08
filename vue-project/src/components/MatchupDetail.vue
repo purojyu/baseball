@@ -96,12 +96,13 @@
           title="ゾーン別対戦成績"
           subtitle="打者目線"
           :course-stats="courseStats"
-          :sample-size="summary.ab"
+          :sample-size="zoneSampleSize"
           :batter-handed="info.batterHanded"
         />
+        <p class="zone-note">{{ pitchDataNote }}</p>
 
         <!-- 球種別 -->
-        <div class="pitch-type-section">
+        <div v-if="pitchTypeStats.length" class="pitch-type-section">
           <h3 class="section-title">球種別</h3>
           <div class="pitch-type-list">
             <div v-for="pt in pitchTypeStats" :key="pt.pitchType" class="pitch-type-row">
@@ -243,6 +244,23 @@ export default {
     displayedLog() {
       return this.showAllLog ? this.atBatLog : this.atBatLog.slice(0, 20);
     },
+    // ゾーン図の n は「投球データ（最終球コース）がある打数」。通算打数とは一致しない
+    zoneSampleSize() {
+      return this.courseStats.reduce((sum, z) => sum + (z.ab || 0), 0);
+    },
+    // 投球データがある年度（打席ログの配球有無から判定）
+    pitchDataYears() {
+      const years = this.atBatLog
+        .filter((log) => log.lastPitchType && log.date)
+        .map((log) => Number(String(log.date).slice(0, 4)));
+      return [...new Set(years)].sort();
+    },
+    pitchDataNote() {
+      const years = this.pitchDataYears;
+      if (!years.length) return "※この対戦は投球データ（コース・球種）がある試合がないため、ゾーン別・球種別は集計できません。";
+      const range = years.length === 1 ? `${years[0]}年` : `${years[0]}〜${years[years.length - 1]}年`;
+      return `※ゾーン別・球種別は投球データのある${range}の打席のみで集計しています。`;
+    },
     maxPitchTypeAb() {
       if (!this.pitchTypeStats.length) return 1;
       return Math.max(...this.pitchTypeStats.map((pt) => pt.ab));
@@ -260,22 +278,28 @@ export default {
     getPitchTypeBarWidth(ab) {
       return (ab / this.maxPitchTypeAb) * 100;
     },
-    getResultClass(result) {
+    // Yahoo の打席結果は「四(全角空白)球」「三(全角空白)振」のように全角スペース入りで来るため、判定前に空白を除去する
+    normalizeResult(result) {
+      return result ? result.replace(/[\s\u3000]/g, "") : "";
+    },
+    getResultClass(rawResult) {
+      const result = this.normalizeResult(rawResult);
       if (!result) return "";
       if (result.includes("本")) return "result-hr";
       if (result.includes("安") || result.includes("２") || result.includes("３")) return "result-hit";
-      if (result.includes("四球") || result.includes("死球")) return "result-bb";
+      if (result.includes("四球") || result.includes("死球") || result.includes("敬遠")) return "result-bb";
       if (result.includes("三振")) return "result-so";
       return "result-out";
     },
-    getResultAbbr(result) {
+    getResultAbbr(rawResult) {
+      const result = this.normalizeResult(rawResult);
       if (!result) return "-";
       if (result.includes("本")) return "HR";
       if (result.includes("３")) return "3B";
       if (result.includes("２")) return "2B";
       if (result.includes("安")) return "H";
-      if (result.includes("四球")) return "BB";
       if (result.includes("敬遠")) return "IBB";
+      if (result.includes("四球")) return "BB";
       if (result.includes("死球")) return "HBP";
       if (result.includes("三振")) return "SO";
       if (result.includes("犠飛")) return "SF";
@@ -596,6 +620,12 @@ export default {
   font-size: 10px;
   color: #6b7280;
   margin-top: 2px;
+}
+
+.zone-note {
+  margin: -12px 0 20px;
+  font-size: 11px;
+  color: #6b7280;
 }
 
 /* 球種別 */
