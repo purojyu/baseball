@@ -123,6 +123,8 @@ export default {
   margin: 0 auto;
   padding: 16px;
   text-align: left;
+  /* 読み込み中にフッターが画面上部に出て、データ表示時に押し下げられる(CLS)のを防ぐ */
+  min-height: 100vh;
 }
 .error-card {
   text-align: center;

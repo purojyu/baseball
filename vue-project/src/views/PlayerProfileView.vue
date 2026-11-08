@@ -309,28 +309,25 @@ export default {
     courseStatsByHand() {
       return this.profile?.courseStatsByHand || null;
     },
-    courseSampleSize() {
-      return this.profile?.courseSampleSize || {};
-    },
     // 現在のタブで表示するゾーン別成績（データが無ければ合計にフォールバック）
     activeCourseStats() {
       const byHand = this.courseStatsByHand;
       if (byHand && byHand[this.activeHand]) return byHand[this.activeHand];
       return this.courseStats;
     },
+    // ゾーン図の n は実際にゾーンへ集計された打数（投球データのある打席のみ）。
+    // courseSampleSize は通算打数のため、コース別(当年のみ)と食い違っていた
     activeSampleSize() {
-      const s = this.courseSampleSize;
-      if (s && s[this.activeHand] != null) return s[this.activeHand];
-      return this.summary.ab || 0;
+      return this.zoneAb(this.activeCourseStats);
     },
     // タブ定義（ラベルは投手/打者で出し分け、サンプル0の対右/対左は非活性）
     handTabs() {
-      const s = this.courseSampleSize || {};
+      const byHand = this.courseStatsByHand || {};
       const rightLabel = this.isPitcher ? "対右打者" : "対右投手";
       const leftLabel = this.isPitcher ? "対左打者" : "対左投手";
-      const allN = s.all != null ? s.all : this.summary.ab || 0;
-      const rightN = s.vsRight != null ? s.vsRight : 0;
-      const leftN = s.vsLeft != null ? s.vsLeft : 0;
+      const allN = this.zoneAb(byHand.all || this.courseStats);
+      const rightN = this.zoneAb(byHand.vsRight);
+      const leftN = this.zoneAb(byHand.vsLeft);
       return [
         { key: "all", label: "合計", n: allN, disabled: false },
         { key: "vsRight", label: rightLabel, n: rightN, disabled: rightN === 0 },
@@ -400,6 +397,10 @@ export default {
     },
   },
   methods: {
+    // ゾーン別成績の合計打数（投球データのある打席のみ）
+    zoneAb(stats) {
+      return (stats || []).reduce((sum, z) => sum + (z.ab || 0), 0);
+    },
     async fetchProfile() {
       this.isLoading = true;
       this.errorMessage = "";
